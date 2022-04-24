@@ -5,8 +5,8 @@ using namespace std;
 template<typename T>
 struct FillFromBitonalData
 {
-    uint32_t height;
     uint32_t width;
+    uint32_t height;
     const uint8_t* ptrSrc;
     uint32_t srcStride;
     T* ptrDest;
@@ -69,7 +69,17 @@ void FillFromBitonalFromOnes_Gray8_C(
     std::uint32_t destinationStride,
     std::uint8_t valueForOnes)
 {
-    const uint32_t widthOverEight = width / 8;
+    FillFromBitonalData<uint8_t> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = destination;
+    data.destStride = destinationStride;
+    data.value = valueForOnes;
+    FillFromBitonalFromOnes<uint8_t>(data);
+
+    /*const uint32_t widthOverEight = width / 8;
     const uint32_t widthRemainder = width % 8;
     for (uint32_t y = 0; y < height; ++y)
     {
@@ -108,7 +118,7 @@ void FillFromBitonalFromOnes_Gray8_C(
                 mask <<= 1;
             }
         }
-    }
+    }*/
 }
 
 void FillFromBitonalFromOnes_Gray16_C(
