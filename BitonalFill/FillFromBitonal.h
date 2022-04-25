@@ -28,3 +28,12 @@ void FillFromBitonalFromOnes_Float32_C(
     float* destination,
     std::uint32_t destinationStride,
     float valueForOnes);
+
+void FillFromBitonalFromOnes_Gray8_AVX2(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForOnes);
