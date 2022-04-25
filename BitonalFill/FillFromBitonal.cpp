@@ -28,7 +28,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
         for (uint32_t x_over_eight = 0; x_over_eight < widthOverEight; ++x_over_eight)
         {
             uint8_t v = *ptrSrc;
-            uint8_t mask = 1;
+            uint8_t mask = 0x80;
             for (uint8_t i = 0; i < 8; ++i)
             {
                 if (v & mask)
@@ -36,7 +36,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
                     ptrDest[i] = info.value;
                 }
 
-                mask <<= 1;
+                mask >>= 1;
             }
 
             ++ptrSrc;
@@ -46,7 +46,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
         if (widthRemainder > 0)
         {
             uint8_t v = *ptrSrc;
-            uint8_t mask = 1;
+            uint8_t mask = 0x80;
             for (uint32_t i = 0; i < widthRemainder; ++i)
             {
                 if (v & mask)
@@ -54,7 +54,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
                     ptrDest[i] = info.value;
                 }
 
-                mask <<= 1;
+                mask >>= 1;
             }
         }
     }
