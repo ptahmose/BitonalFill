@@ -11,7 +11,7 @@ void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source,
     {
         uint8_t v = *source;
         uint8_t mask = 0x80;
-        for (uint8_t i = 0; i < max(8u, count); ++i)
+        for (uint32_t i = 0; i < max(8u, count); ++i)
         {
             if (v & mask)
             {
@@ -26,7 +26,7 @@ void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source,
             destination += 8;
             v = *(1 + source);
 
-            for (uint8_t i = 0; i < max(8u, count - 8); ++i)
+            for (uint32_t i = 0; i < max(8u, count - 8); ++i)
             {
                 if (v & mask)
                 {
