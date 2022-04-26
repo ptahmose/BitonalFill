@@ -1,4 +1,5 @@
 #include "FillFromBitonal.h"
+#include "ColorPixelStructs.h"
 
 using namespace std;
 
@@ -159,5 +160,26 @@ void FillFromBitonalFromOnes_Float32_C(
     data.destStride = destinationStride;
     data.value = valueForOnes;
     FillFromBitonalFromOnes<float>(data);
+}
 
+void FillFromBitonalFromOnes_Bgr24_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForOnesRed,
+    std::uint8_t valueForOnesGreen,
+    std::uint8_t valueForOnesBlue)
+{
+    FillFromBitonalData<BgrGray8> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = (BgrGray8*)destination;
+    data.destStride = destinationStride;
+    data.value = BgrGray8{ valueForOnesBlue,valueForOnesGreen,valueForOnesRed };
+    FillFromBitonalFromOnes<BgrGray8>(data);
 }
