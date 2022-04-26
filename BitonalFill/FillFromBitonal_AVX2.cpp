@@ -1,7 +1,43 @@
 #include <immintrin.h>
+#include <algorithm>
 #include "FillFromBitonal.h"
 
 using namespace std;
+
+template <typename T>
+void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source, T* destination, T value)
+{
+    if (count > 0)
+    {
+        uint8_t v = *source;
+        uint8_t mask = 0x80;
+        for (uint8_t i = 0; i < max(8u, count); ++i)
+        {
+            if (v & mask)
+            {
+                destination[i] = value;
+            }
+
+            mask >>= 1;
+        }
+
+        if (count > 8)
+        {
+            destination += 8;
+            v = *(1 + source);
+
+            for (uint8_t i = 0; i < max(8u, count - 8); ++i)
+            {
+                if (v & mask)
+                {
+                    destination[i] = value;
+                }
+
+                mask >>= 1;
+            }
+        }
+    }
+}
 
 void FillFromBitonalFromOnes_Gray8_AVX2(
     std::uint32_t width,
@@ -39,6 +75,8 @@ void FillFromBitonalFromOnes_Gray8_AVX2(
             ++ptrSrc;
             destination += 16;
         }
+
+        FillRemainderLineFromBitonalFromOnes<uint8_t>(widthRemainder, (const uint8_t*)ptrSrc, destination, valueForOnes);
     }
 }
 
@@ -61,7 +99,7 @@ void FillFromBitonalFromOnes_Gray16_AVX2(
     for (uint32_t y = 0; y < height; ++y)
     {
         const uint16_t* ptrSrc = reinterpret_cast<const uint16_t*>(sourceBitonal + static_cast<size_t>(y) * sourceBitonalStride);
-        uint16_t* ptrDst = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination )+ static_cast<size_t>(y) * destinationStride);
+        uint16_t* ptrDst = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destinationStride);
 
         for (uint32_t x16 = 0; x16 < widthOver16; ++x16)
         {
@@ -74,15 +112,17 @@ void FillFromBitonalFromOnes_Gray16_AVX2(
             const __m128i andWithMask = _mm_andnot_si128(bitonal, mask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
 
-            //const __m256i maskForStoreWords = _mm256_cvtepi8_epi16(maskForStore);
+            // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
             const __m128i maskForStoreWordsLow = _mm_cvtepi8_epi16(maskForStore);
             const __m128i maskForStoreWordsHigh = _mm_cvtepi8_epi16(_mm_unpackhi_epi64(maskForStore, maskForStore));
 
             _mm_maskmoveu_si128(value, maskForStoreWordsLow, reinterpret_cast<char*>(destination));
-            _mm_maskmoveu_si128(value, maskForStoreWordsHigh, reinterpret_cast<char*>(destination+8));
+            _mm_maskmoveu_si128(value, maskForStoreWordsHigh, reinterpret_cast<char*>(destination + 8));
 
             ++ptrSrc;
             destination += 16;
         }
+
+        FillRemainderLineFromBitonalFromOnes<uint16_t>(widthRemainder, (const uint8_t*)ptrSrc, destination, valueForOnes);
     }
 }
