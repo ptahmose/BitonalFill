@@ -58,3 +58,13 @@ void FillFromBitonalFromOnes_Gray16_AVX2(
     std::uint32_t destinationStride,
     std::uint16_t valueForOnes);
 
+void FillFromBitonalFromOnes_Bgr24_AVX2(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForOnesRed,
+    std::uint8_t valueForOnesGreen,
+    std::uint8_t valueForOnesBlue);
