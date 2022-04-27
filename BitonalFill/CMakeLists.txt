@@ -4,6 +4,6 @@
 cmake_minimum_required (VERSION 3.8)
 
 # Add source to this project's executable.
-add_executable (BitonalFill "BitonalFill.cpp" "BitonalFill.h" "FillFromBitonal.h" "FillFromBitonal.cpp" "FillFromBitonal_AVX2.cpp" "ColorPixelStructs.h")
+add_executable (BitonalFill "BitonalFill.cpp" "BitonalFill.h" "FillFromBitonal.h" "FillFromBitonal.cpp" "FillFromBitonal_AVX2.cpp" "ColorPixelStructs.h" "FillFromBitonalFillTest.cpp" "FillFromBitonalFillTest.h")
 
 # TODO: Add tests and install targets if needed.
