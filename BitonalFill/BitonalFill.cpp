@@ -3,11 +3,30 @@
 
 #include "BitonalFill.h"
 #include "FillFromBitonal.h"
+#include "FillFromBitonalFillTest.h"
 
 using namespace std;
 
+static void Test()
+{
+    const uint32_t width = 2048;
+    const uint32_t height = 2048;
+
+    Bitmap bitonal = CreateBitmapWithRandomContentBitonal(width, height);
+    Bitmap sourceGray8 = CreateBitmapWithRandomContentGray8(width, height);
+
+    Bitmap destGray8_C = CreateBitmap(PixelType::Gray8, width, height);
+    Bitmap destGray8_AVX = CreateBitmap(PixelType::Gray8, width, height);
+
+    FillFromBitonalFromOnes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_C.data.get(), destGray8_C.stride, 0x42);
+    FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+    bool b = Compare(destGray8_C, destGray8_AVX);
+    cout << "Gray8: " << (b == true ? "ok" : "error") << endl;
+}
+
 int main()
 {
+    Test();
     cout << "Hello CMake." << endl;
 
     uint8_t bitonalSrc[] = { 0x88,0x44 };
