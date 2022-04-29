@@ -25,6 +25,8 @@ struct Bitmap
 Bitmap CreateBitmap(PixelType pixeltype, std::uint32_t width, std::uint32_t height);
 Bitmap CreateBitmapWithRandomContentBitonal(std::uint32_t width, std::uint32_t height);
 Bitmap CreateBitmapWithRandomContentGray8(std::uint32_t width, std::uint32_t height);
+Bitmap CreateBitmapWithRandomContentGray16(std::uint32_t width, std::uint32_t height);
+Bitmap CreateBitmapWithRandomContentBgr24(std::uint32_t width, std::uint32_t height);
 
 bool Compare(const Bitmap& a, const Bitmap& b);
 

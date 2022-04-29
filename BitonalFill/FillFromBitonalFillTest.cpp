@@ -86,6 +86,32 @@ Bitmap CreateBitmapWithRandomContentGray8(std::uint32_t width, std::uint32_t hei
     return bitmap;
 }
 
+Bitmap CreateBitmapWithRandomContentGray16(std::uint32_t width, std::uint32_t height)
+{
+    Bitmap bitmap;
+    bitmap.pixeltype = PixelType::Gray16;
+    bitmap.width = width;
+    bitmap.height = height;
+    bitmap.stride = width * 2;
+    size_t size = static_cast<size_t>(bitmap.stride) * height;
+    bitmap.data = shared_ptr<void>(malloc(size), free);
+    FillWithRandomData(bitmap.data.get(), size);
+    return bitmap;
+}
+
+Bitmap CreateBitmapWithRandomContentBgr24(std::uint32_t width, std::uint32_t height)
+{
+    Bitmap bitmap;
+    bitmap.pixeltype = PixelType::Bgr24;
+    bitmap.width = width;
+    bitmap.height = height;
+    bitmap.stride = width * 3;
+    size_t size = static_cast<size_t>(bitmap.stride) * height;
+    bitmap.data = shared_ptr<void>(malloc(size), free);
+    FillWithRandomData(bitmap.data.get(), size);
+    return bitmap;
+}
+
 bool Compare(const Bitmap& a, const Bitmap& b)
 {
     if (a.pixeltype != b.pixeltype ||
