@@ -113,6 +113,8 @@ static void Test()
         {
 #if BITONALFILL_HASAVX
             FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
 #endif
         }
 
@@ -145,12 +147,16 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
         FillFromBitonalFromOnes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4849);
 #if BITONALFILL_HASAVX
         FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromOnes_Gray16_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
 #endif
         break;
     case PixelType::Bgr24:
         FillFromBitonalFromOnes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48, 0x49, 0x4a);
 #if BITONALFILL_HASAVX
         FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
 #endif
         break;
 
@@ -182,7 +188,7 @@ static void StressTest()
 int main()
 {
     Test();
-    //StressTest();
+    StressTest();
 
     /*
     cout << "Hello CMake." << endl;
