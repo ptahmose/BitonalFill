@@ -1,7 +1,13 @@
+#include "config.h"
+
+#if BITONALFILL_HASAVX 
+
 #include <immintrin.h>
 #include <algorithm>
 #include "FillFromBitonal.h"
 #include "ColorPixelStructs.h"
+
+#include "FillRemainderLine.h"
 
 #if defined(_MSC_VER) && !defined(__AVX2__)
 #error "Must be compiled with option /arch:AVX2"
@@ -12,41 +18,41 @@ using namespace std;
 static const __m128i bitSelectMask = _mm_set_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80), 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80));
 static const __m128i shuffleConstForRepeatBytes8Times = _mm_set_epi8(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 
-template <typename T>
-void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source, T* destination, T value)
-{
-    if (count > 0)
-    {
-        uint8_t v = *source;
-        uint8_t mask = 0x80;
-        for (uint32_t i = 0; i < min(8u, count); ++i)
-        {
-            if (v & mask)
-            {
-                destination[i] = value;
-            }
-
-            mask >>= 1;
-        }
-
-        if (count > 8)
-        {
-            destination += 8;
-            v = *(1 + source);
-            mask = 0x80;
-
-            for (uint32_t i = 0; i < min(8u, count - 8); ++i)
-            {
-                if (v & mask)
-                {
-                    destination[i] = value;
-                }
-
-                mask >>= 1;
-            }
-        }
-    }
-}
+//template <typename T>
+//void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source, T* destination, T value)
+//{
+//    if (count > 0)
+//    {
+//        uint8_t v = *source;
+//        uint8_t mask = 0x80;
+//        for (uint32_t i = 0; i < min(8u, count); ++i)
+//        {
+//            if (v & mask)
+//            {
+//                destination[i] = value;
+//            }
+//
+//            mask >>= 1;
+//        }
+//
+//        if (count > 8)
+//        {
+//            destination += 8;
+//            v = *(1 + source);
+//            mask = 0x80;
+//
+//            for (uint32_t i = 0; i < min(8u, count - 8); ++i)
+//            {
+//                if (v & mask)
+//                {
+//                    destination[i] = value;
+//                }
+//
+//                mask >>= 1;
+//            }
+//        }
+//    }
+//}
 
 void FillFromBitonalFromOnes_Gray8_AVX2(
     std::uint32_t width,
@@ -189,3 +195,5 @@ void FillFromBitonalFromOnes_Bgr24_AVX2(
         FillRemainderLineFromBitonalFromOnes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
     }
 }
+
+#endif

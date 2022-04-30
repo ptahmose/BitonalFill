@@ -2,13 +2,13 @@
 //
 
 #include "BitonalFill.h"
+#include "config.h"
 
 #include <chrono>
-
+#include <Windows.h>
 #include "FillFromBitonal.h"
 #include "FillFromBitonalFillTest.h"
 
-#include <Windows.h>
 
 using namespace std;
 
@@ -37,11 +37,14 @@ static void Test()
         size_t dataSize = destGray8_AVX.stride * destGray8_AVX.height;
         cout << "Gray8 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
-
         start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
+#if BITONALFILL_HASAVX
             FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromOnes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+#endif
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -72,7 +75,9 @@ static void Test()
         start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
+#if BITONALFILL_HASAVX
             FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
+#endif
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -103,7 +108,9 @@ static void Test()
         start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
+#if BITONALFILL_HASAVX
             FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+#endif
         }
 
         end = std::chrono::high_resolution_clock::now();
@@ -125,15 +132,23 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     {
     case PixelType::Gray8:
         FillFromBitonalFromOnes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48);
+#if BITONALFILL_HASAVX
         FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromOnes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+#endif
         break;
     case PixelType::Gray16:
         FillFromBitonalFromOnes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4849);
+#if BITONALFILL_HASAVX
         FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+#endif
         break;
     case PixelType::Bgr24:
         FillFromBitonalFromOnes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48, 0x49, 0x4a);
+#if BITONALFILL_HASAVX
         FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+#endif
         break;
 
     }
@@ -163,16 +178,17 @@ static void StressTest()
 
 int main()
 {
-    // Test();
-    StressTest();
+    Test();
+//    StressTest();
     /*
     cout << "Hello CMake." << endl;
 
     uint8_t bitonalSrc[] = { 0x88,0x44 };
     uint8_t gray8Bitmap[16] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 };
 
-    FillFromBitonalFromOnes_Gray8_AVX2(16, 1, bitonalSrc, 2, gray8Bitmap, 16, 0xff);
-
+    FillFromBitonalFromOnes_Gray8_NEON(16, 1, bitonalSrc, 2, gray8Bitmap, 16, 0xff);
+    //FillFromBitonalFromOnes_Gray8_AVX2(16, 1, bitonalSrc, 2, gray8Bitmap, 16, 0xff);
+    
     uint16_t gray16Bitmap[16] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 };
     FillFromBitonalFromOnes_Gray16_AVX2(16, 1, bitonalSrc, 2, gray16Bitmap, 32, 0xffef);
 

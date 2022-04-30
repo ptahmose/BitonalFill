@@ -5,5 +5,7 @@ cmake_minimum_required (VERSION 3.8)
 
 project ("BitonalFill")
 
+set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
+
 # Include sub-projects.
 add_subdirectory ("BitonalFill")

@@ -2,6 +2,8 @@
 
 #include <cstdint>
 
+#include "config.h"
+
 void FillFromBitonalFromOnes_Gray8_C(
     std::uint32_t width, 
     std::uint32_t height, 
@@ -51,6 +53,7 @@ void FillFromBitonalFromOnes_Bgr8_C(
     std::uint8_t valueForOnesGreen,
     std::uint8_t valueForOnesBlue);
 
+#if BITONALFILL_HASAVX
 void FillFromBitonalFromOnes_Gray8_AVX2(
     std::uint32_t width,
     std::uint32_t height,
@@ -79,3 +82,16 @@ void FillFromBitonalFromOnes_Bgr24_AVX2(
     std::uint8_t valueForOnesRed,
     std::uint8_t valueForOnesGreen,
     std::uint8_t valueForOnesBlue);
+#endif
+
+#if BITONALFILL_HASNEON
+void FillFromBitonalFromOnes_Gray8_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForOnes);
+
+#endif
