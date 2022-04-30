@@ -33,6 +33,7 @@ void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source,
         {
             destination += 8;
             v = *(1 + source);
+            mask = 0x80;
 
             for (uint32_t i = 0; i < min(8u, count - 8); ++i)
             {

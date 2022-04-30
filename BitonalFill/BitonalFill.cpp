@@ -8,6 +8,8 @@
 #include "FillFromBitonal.h"
 #include "FillFromBitonalFillTest.h"
 
+#include <Windows.h>
+
 using namespace std;
 
 static void Test()
@@ -142,17 +144,26 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
 static void StressTest()
 {
     bool b = TestCase(PixelType::Gray8, 113, 2007);
-    cout << "Test 1 -> "<< (b == true ? "ok" : "error") << endl;
+    cout << "Test 1 -> " << (b == true ? "ok" : "error") << endl;
     b = TestCase(PixelType::Gray16, 113, 2007);
     cout << "Test 2 -> " << (b == true ? "ok" : "error") << endl;
     b = TestCase(PixelType::Bgr24, 113, 2007);
     cout << "Test 3 -> " << (b == true ? "ok" : "error") << endl;
 
+    b = true;
+    for (uint32_t w = 183; w < 200; ++w)
+    {
+        b &= TestCase(PixelType::Gray8, w, 17);
+        b &= TestCase(PixelType::Gray16, w, 17);
+        b &= TestCase(PixelType::Bgr24, w, 17);
+    }
+
+    cout << "Test 4 -> " << (b == true ? "ok" : "error") << endl;
 }
 
 int main()
 {
-   // Test();
+    // Test();
     StressTest();
     /*
     cout << "Hello CMake." << endl;
