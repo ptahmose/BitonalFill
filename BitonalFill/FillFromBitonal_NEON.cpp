@@ -141,12 +141,6 @@ void FillFromBitonalFromOnes_Bgr24_NEON(
 
             vst3_u8(ptrDst, m4);
 
-/*            uint16x8_t m2 = vandq_u16(m1, notVecu16);
-
-            uint16x8_t m3 = vandq_u16(vecu16, value);
-            uint16x8_t m4 = vorrq_u16(m2, m3);
-            vst1q_u16(ptrDst, m4);*/
-
             ++ptrSrc;
             ptrDst += 8*3;
         }
