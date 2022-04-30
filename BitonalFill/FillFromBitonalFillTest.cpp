@@ -4,6 +4,41 @@
 
 using namespace std;
 
+size_t Bitmap::GetLineLength() const
+{
+    switch (pixeltype)
+    {
+    case PixelType::Gray8:
+        return this->width;
+    case PixelType::Gray16:
+        return this->width * 2;
+    case PixelType::Bgr24:
+        return this->width * 3;
+    case PixelType::Bgr48:
+        return this->width * 6;
+    case PixelType::Bitonal:
+        return (width + 7) / 8;
+    default:
+        throw exception();
+    }
+}
+
+void CopyBitmap(Bitmap& dst, const Bitmap& src)
+{
+    if (dst.height != src.height || dst.width != src.width || dst.pixeltype != src.pixeltype)
+    {
+        throw invalid_argument("Bitmaps must be same size and pixeltype");
+    }
+
+    const size_t lineLength = dst.GetLineLength();
+    for (uint32_t y = 0; y < dst.height; ++y)
+    {
+        const void* lineSrc = (const uint8_t*)(src.data.get()) + y * src.stride;
+        void* lineDst = (uint8_t*)(dst.data.get()) + y * dst.stride;
+        memcpy(lineDst, lineSrc, lineLength);
+    }
+}
+
 static void FillWithRandomData(void* ptr, size_t size)
 {
     std::random_device rd;
@@ -56,10 +91,16 @@ Bitmap CreateBitmap(PixelType pixeltype, std::uint32_t width, std::uint32_t heig
     bitmap.height = height;
     size_t size = static_cast<size_t>(bitmap.stride) * height;
     bitmap.data = shared_ptr<void>(malloc(size), free);
-    memset(bitmap.data.get(), 88, size);
     return bitmap;
 }
 
+Bitmap CreateBitmapWithRandomContent(PixelType pixeltype, std::uint32_t width, std::uint32_t height)
+{
+    Bitmap bitmap = CreateBitmap(pixeltype, width, height);
+    FillWithRandomData(bitmap.data.get(), bitmap.GetTotalSize());
+    return bitmap;
+}
+/*
 Bitmap CreateBitmapWithRandomContentBitonal(std::uint32_t width, std::uint32_t height)
 {
     Bitmap bitmap;
@@ -111,7 +152,7 @@ Bitmap CreateBitmapWithRandomContentBgr24(std::uint32_t width, std::uint32_t hei
     FillWithRandomData(bitmap.data.get(), size);
     return bitmap;
 }
-
+*/
 bool Compare(const Bitmap& a, const Bitmap& b)
 {
     if (a.pixeltype != b.pixeltype ||

@@ -16,12 +16,13 @@ static void Test()
     const uint32_t width = 2048;
     const uint32_t height = 2048;
 
-    Bitmap bitonal = CreateBitmapWithRandomContentBitonal(width, height);
+    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
 
     {
-        Bitmap sourceGray8 = CreateBitmapWithRandomContentGray8(width, height);
-        Bitmap destGray8_C = CreateBitmap(PixelType::Gray8, width, height);
+        Bitmap sourceGray8 = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
+        Bitmap destGray8_C = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
         Bitmap destGray8_AVX = CreateBitmap(PixelType::Gray8, width, height);
+        CopyBitmap(destGray8_AVX, destGray8_C);
 
         auto start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
@@ -50,9 +51,10 @@ static void Test()
     }
 
     {
-        Bitmap sourceGray16 = CreateBitmapWithRandomContentGray16(width, height);
-        Bitmap destGray16_C = CreateBitmap(PixelType::Gray16, width, height);
+        Bitmap sourceGray16 = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
+        Bitmap destGray16_C = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
         Bitmap destGray16_AVX = CreateBitmap(PixelType::Gray16, width, height);
+        CopyBitmap(destGray16_AVX, destGray16_C);
 
         auto start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
@@ -80,9 +82,10 @@ static void Test()
     }
 
     {
-        Bitmap sourceBgr24 = CreateBitmapWithRandomContentBgr24(width, height);
-        Bitmap destBgr24_C = CreateBitmap(PixelType::Bgr24, width, height);
+        Bitmap sourceBgr24 = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
+        Bitmap destBgr24_C = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
         Bitmap destBgr24_AVX = CreateBitmap(PixelType::Bgr24, width, height);
+        CopyBitmap(destBgr24_AVX, destBgr24_C);
 
         auto start = std::chrono::high_resolution_clock::now();
         for (uint32_t i = 0; i < REPEAT; ++i)
@@ -110,10 +113,47 @@ static void Test()
     }
 }
 
+static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
+{
+    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
+    Bitmap dest_C = CreateBitmapWithRandomContent(pixeltype, width, height);
+    Bitmap dest_Simd = CreateBitmap(pixeltype, width, height);
+    CopyBitmap(dest_Simd, dest_C);
+    switch (pixeltype)
+    {
+    case PixelType::Gray8:
+        FillFromBitonalFromOnes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48);
+        FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+        break;
+    case PixelType::Gray16:
+        FillFromBitonalFromOnes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4849);
+        FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+        break;
+    case PixelType::Bgr24:
+        FillFromBitonalFromOnes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48, 0x49, 0x4a);
+        FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+        break;
+
+    }
+
+    return Compare(dest_C, dest_Simd);
+}
+
+static void StressTest()
+{
+    bool b = TestCase(PixelType::Gray8, 113, 2007);
+    cout << "Test 1 -> "<< (b == true ? "ok" : "error") << endl;
+    b = TestCase(PixelType::Gray16, 113, 2007);
+    cout << "Test 2 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCase(PixelType::Bgr24, 113, 2007);
+    cout << "Test 3 -> " << (b == true ? "ok" : "error") << endl;
+
+}
+
 int main()
 {
-    Test();
-
+   // Test();
+    StressTest();
     /*
     cout << "Hello CMake." << endl;
 

@@ -20,13 +20,18 @@ struct Bitmap
     std::uint32_t height;
     std::uint32_t stride;
     std::shared_ptr<void> data;
+
+    size_t GetTotalSize() const { return (size_t)this->stride * this->height; }
+    size_t GetLineLength() const;
 };
 
 Bitmap CreateBitmap(PixelType pixeltype, std::uint32_t width, std::uint32_t height);
-Bitmap CreateBitmapWithRandomContentBitonal(std::uint32_t width, std::uint32_t height);
-Bitmap CreateBitmapWithRandomContentGray8(std::uint32_t width, std::uint32_t height);
-Bitmap CreateBitmapWithRandomContentGray16(std::uint32_t width, std::uint32_t height);
-Bitmap CreateBitmapWithRandomContentBgr24(std::uint32_t width, std::uint32_t height);
+Bitmap CreateBitmapWithRandomContent(PixelType pixeltype, std::uint32_t width, std::uint32_t height);
+void CopyBitmap(Bitmap& dst, const Bitmap& src);
+//Bitmap CreateBitmapWithRandomContentBitonal(std::uint32_t width, std::uint32_t height);
+//Bitmap CreateBitmapWithRandomContentGray8(std::uint32_t width, std::uint32_t height);
+//Bitmap CreateBitmapWithRandomContentGray16(std::uint32_t width, std::uint32_t height);
+//Bitmap CreateBitmapWithRandomContentBgr24(std::uint32_t width, std::uint32_t height);
 
 bool Compare(const Bitmap& a, const Bitmap& b);
 
