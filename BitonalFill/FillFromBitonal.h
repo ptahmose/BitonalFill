@@ -94,4 +94,13 @@ void FillFromBitonalFromOnes_Gray8_NEON(
     std::uint32_t destinationStride,
     std::uint8_t valueForOnes);
 
+void FillFromBitonalFromOnes_Gray16_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForOnes);
+
 #endif
