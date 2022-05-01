@@ -4,7 +4,7 @@
  #define BITONALFILL_HASAVX  @BITONALFILL_HAS_AVX@
 #endif
 
-#if defined(_M_ARM64) || defined(__arm__)
+#if defined(_M_ARM64) || defined(__arm__) || defined(__aarch64__)
 #define BITONALFILL_HASNEON  @BITONALFILL_HAS_NEON@
 #endif
 
