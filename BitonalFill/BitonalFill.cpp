@@ -194,7 +194,14 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
         FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
 #endif
         break;
-
+    case PixelType::Bgr48:
+        FillFromBitonalFromOnes_Bgr48_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4858, 0x4959, 0x4a5a);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromOnes_Bgr48_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
+#elif BITONALFILL_HASNEON
+        //FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+#endif
+        break;
     }
 
     return Compare(dest_C, dest_Simd);
@@ -208,6 +215,8 @@ static void StressTest()
     cout << "Test 2 -> " << (b == true ? "ok" : "error") << endl;
     b = TestCase(PixelType::Bgr24, 113, 2007);
     cout << "Test 3 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCase(PixelType::Bgr48, 113, 2007);
+    cout << "Test 4 -> " << (b == true ? "ok" : "error") << endl;
 
     b = true;
     for (uint32_t w = 183; w < 200; ++w)
@@ -215,9 +224,10 @@ static void StressTest()
         b &= TestCase(PixelType::Gray8, w, 17);
         b &= TestCase(PixelType::Gray16, w, 17);
         b &= TestCase(PixelType::Bgr24, w, 17);
+        b &= TestCase(PixelType::Bgr48, w, 17);
     }
 
-    cout << "Test 4 -> " << (b == true ? "ok" : "error") << endl;
+    cout << "Test 5 -> " << (b == true ? "ok" : "error") << endl;
 }
 
 int main()
