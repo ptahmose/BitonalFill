@@ -20,7 +20,6 @@ void FillFromBitonalFromOnes_Gray8_NEON(
 {
     uint8x8_t value = vdup_n_u8(valueForOnes);
     uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
-    //bitSelectMask.n64_u64[0] = 0x0102040810204080;
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
