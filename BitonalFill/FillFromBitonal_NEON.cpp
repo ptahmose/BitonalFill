@@ -35,7 +35,7 @@ void FillFromBitonalFromOnes_Gray8_NEON(
             uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
             uint8x8_t notVec = vmvn_u8(vec);
             uint8x8_t r = vorr_u8(vand_u8(vld1_u8(ptrDst), notVec), vand_u8(vec, value));
-            vst1_u64(ptrDst, r);
+            vst1_u8(ptrDst, r);
 
             ++ptrSrc;
             ptrDst += 8;
@@ -68,8 +68,8 @@ void FillFromBitonalFromOnes_Gray16_NEON(
         {
             const uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
             const uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
-            const uint16x8_t vec16 = vmovl_s8(vec);
-            const uint16x8_t notVec16 = vmovl_s8(vmvn_u8(vec));
+            const uint16x8_t vec16 = vreinterpret_u16_s16(vmovl_s8(vec));
+            const uint16x8_t notVec16 = vreinterpret_u16_s16(vmovl_s8(vmvn_u8(vec)));
 
             const uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16((uint64_t*)ptrDst), notVec16), vandq_u16(vec16, value));
             vst1q_u16(ptrDst, r);
@@ -113,7 +113,7 @@ void FillFromBitonalFromOnes_Bgr24_NEON(
             uint8x8_t notVecu = vmvn_u8(vec);
 
             uint8x8x3_t m1 = vld3_u8(ptrDst);
-            
+
             uint8x8_t m2_1 = vand_u8(m1.val[0], notVecu);
             uint8x8_t m2_2 = vand_u8(m1.val[1], notVecu);
             uint8x8_t m2_3 = vand_u8(m1.val[2], notVecu);
@@ -134,7 +134,7 @@ void FillFromBitonalFromOnes_Bgr24_NEON(
             vst3_u8(ptrDst, m4);
 
             ++ptrSrc;
-            ptrDst += 8*3;
+            ptrDst += 8 * 3;
         }
 
         FillRemainderLineFromBitonalFromOnes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
