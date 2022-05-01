@@ -169,7 +169,7 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
         {
             uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
             uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
-            uint16x8_t vec16 = vmovl_s8(vec);
+            uint16x8_t vec16 = vmovl_s8(vreinterpret_s8_u8(vec));
             uint16x8_t notVec16 = vmovl_s8(vmvn_u8(vec));
 
             uint16x8x3_t m1 = vld3q_u16(ptrDst);
