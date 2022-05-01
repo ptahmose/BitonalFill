@@ -1,10 +1,12 @@
 #pragma once
 
-#if defined(_M_IX86) || defined(_M_X64)
+// predefined macros for different architectures -> https://sourceforge.net/p/predef/wiki/Architectures/
+
+#if (defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) || (defined(__GNUC__) && (defined(__x86_64__) || defined(__i386__)))
  #define BITONALFILL_HASAVX  @BITONALFILL_HAS_AVX@
 #endif
 
-#if defined(_M_ARM64) || defined(__arm__) || defined(__aarch64__)
+#if (defined(_MSC_VER) && defined(_M_ARM64)) || (defined(__GNUC__) && (defined(__arm__) || defined(__aarch64__)))
 #define BITONALFILL_HASNEON  @BITONALFILL_HAS_NEON@
 #endif
 
