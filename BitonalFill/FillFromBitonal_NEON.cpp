@@ -19,8 +19,8 @@ void FillFromBitonalFromOnes_Gray8_NEON(
     std::uint8_t valueForOnes)
 {
     uint8x8_t value = vdup_n_u8(valueForOnes);
-    uint8x8_t bitSelectMask;
-    bitSelectMask.n64_u64[0] = 0x0102040810204080;
+    uint8x8_t bitSelectMask = vcreate(0x0102040810204080UI64);
+    //bitSelectMask.n64_u64[0] = 0x0102040810204080;
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
@@ -55,8 +55,7 @@ void FillFromBitonalFromOnes_Gray16_NEON(
     std::uint16_t valueForOnes)
 {
     const uint16x8_t value = vmovq_n_u16(valueForOnes);
-    uint8x8_t bitSelectMask;
-    bitSelectMask.n64_u64[0] = 0x0102040810204080;
+    uint8x8_t bitSelectMask = vcreate(0x0102040810204080UI64);
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
@@ -98,8 +97,7 @@ void FillFromBitonalFromOnes_Bgr24_NEON(
     uint8x8_t valueRed = vmov_n_u8(valueForOnesRed);
     uint8x8_t valueGreen = vmov_n_u8(valueForOnesGreen);
     uint8x8_t valueBlue = vmov_n_u8(valueForOnesBlue);
-    uint8x8_t bitSelectMask;
-    bitSelectMask.n64_u64[0] = 0x0102040810204080;
+    uint8x8_t bitSelectMask = vcreate(0x0102040810204080UI64);
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
@@ -158,8 +156,7 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
     const uint16x8_t valueRed = vmovq_n_u16(valueForOnesRed);
     const uint16x8_t valueGreen = vmovq_n_u16(valueForOnesGreen);
     const uint16x8_t valueBlue = vmovq_n_u16(valueForOnesBlue);
-    uint8x8_t bitSelectMask;
-    bitSelectMask.n64_u64[0] = 0x0102040810204080;
+    uint8x8_t bitSelectMask = vcreate(0x0102040810204080UI64);
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
