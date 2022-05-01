@@ -18,42 +18,6 @@ using namespace std;
 static const __m128i bitSelectMask = _mm_set_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80), 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80));
 static const __m128i shuffleConstForRepeatBytes8Times = _mm_set_epi8(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 
-//template <typename T>
-//void FillRemainderLineFromBitonalFromOnes(uint32_t count, const uint8_t* source, T* destination, T value)
-//{
-//    if (count > 0)
-//    {
-//        uint8_t v = *source;
-//        uint8_t mask = 0x80;
-//        for (uint32_t i = 0; i < min(8u, count); ++i)
-//        {
-//            if (v & mask)
-//            {
-//                destination[i] = value;
-//            }
-//
-//            mask >>= 1;
-//        }
-//
-//        if (count > 8)
-//        {
-//            destination += 8;
-//            v = *(1 + source);
-//            mask = 0x80;
-//
-//            for (uint32_t i = 0; i < min(8u, count - 8); ++i)
-//            {
-//                if (v & mask)
-//                {
-//                    destination[i] = value;
-//                }
-//
-//                mask >>= 1;
-//            }
-//        }
-//    }
-//}
-
 void FillFromBitonalFromOnes_Gray8_AVX2(
     std::uint32_t width,
     std::uint32_t height,
@@ -195,5 +159,80 @@ void FillFromBitonalFromOnes_Bgr24_AVX2(
         FillRemainderLineFromBitonalFromOnes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
     }
 }
+
+
+void FillFromBitonalFromOnes_Bgr48_AVX2(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForOnesRed,
+    std::uint16_t valueForOnesGreen,
+    std::uint16_t valueForOnesBlue)
+{
+    static const __m128i shuffleConstValue1 = _mm_setr_epi8(0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00);
+    static const __m128i shuffleConstValue1_1 = _mm_setr_epi8(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03);// 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00);
+    static const __m128i shuffleConstValue1_2 = _mm_setr_epi8(0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01);
+    static const __m128i shuffleConstValue2 = _mm_setr_epi8(0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01);
+    static const __m128i shuffleConstValue2_1 = _mm_setr_epi8(0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05);
+    static const __m128i shuffleConstValue2_2 = _mm_setr_epi8(0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03);
+    static const __m128i shuffleConstValue3 = _mm_setr_epi8(0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02, 0x00, 0x01, 0x02);
+    static const __m128i shuffleConstValue3_1 = _mm_setr_epi8(0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01);
+    static const __m128i shuffleConstValue3_2 = _mm_setr_epi8(0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05);
+    static const __m128i shuffleConstMask1 = _mm_setr_epi8(0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x05);
+    static const __m128i shuffleConstMask2 = _mm_setr_epi8(0x05, 0x05, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09, 0x0a, 0x0a);
+    static const __m128i shuffleConstMask3 = _mm_setr_epi8(0x0a, 0x0b, 0x0b, 0x0b, 0x0c, 0x0c, 0x0c, 0x0d, 0x0d, 0x0d, 0x0e, 0x0e, 0x0e, 0x0f, 0x0f, 0x0f);
+    const __m128i value = _mm_set1_epi64x(((((__int64)valueForOnesRed) << 32) | (((__int64)valueForOnesGreen) << 16) | valueForOnesBlue));
+    const __m128i value1 = _mm_shuffle_epi8(value, shuffleConstValue1);
+    const __m128i value1_1 = _mm_shuffle_epi8(value, shuffleConstValue1_1);
+    const __m128i value1_2 = _mm_shuffle_epi8(value, shuffleConstValue1_2);
+    const __m128i value2 = _mm_shuffle_epi8(value, shuffleConstValue2);
+    const __m128i value2_1 = _mm_shuffle_epi8(value, shuffleConstValue2_1);
+    const __m128i value2_2 = _mm_shuffle_epi8(value, shuffleConstValue2_2);
+    const __m128i value3 = _mm_shuffle_epi8(value, shuffleConstValue3);
+    const __m128i value3_1 = _mm_shuffle_epi8(value, shuffleConstValue3_1);
+    const __m128i value3_2 = _mm_shuffle_epi8(value, shuffleConstValue3_2);
+    const __m128i zero = _mm_setzero_si128();
+
+    const  BgrGray16 valueStruct = BgrGray16{ valueForOnesBlue,valueForOnesGreen,valueForOnesRed };
+
+    const uint32_t widthOver16 = width / 16;
+    const uint32_t widthRemainder = width % 16;
+    for (uint32_t y = 0; y < height; ++y)
+    {
+        const uint16_t* ptrSrc = reinterpret_cast<const uint16_t*>(sourceBitonal + static_cast<size_t>(y) * sourceBitonalStride);
+        uint16_t* ptrDst = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destinationStride);
+
+        for (uint32_t x16 = 0; x16 < widthOver16; ++x16)
+        {
+            // load two bytes from the bitonal source, and repeat each byte 8 times
+            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+
+            // now we and it with the mask, which selects one bit in each byte, so we have
+            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
+            const __m128i andWithMask = _mm_andnot_si128(bitonal, bitSelectMask);
+            const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
+
+            const __m128i maskForStore1 = _mm_shuffle_epi8(maskForStore, shuffleConstMask1);
+            const __m128i maskForStore2 = _mm_shuffle_epi8(maskForStore, shuffleConstMask2);
+            const __m128i maskForStore3 = _mm_shuffle_epi8(maskForStore, shuffleConstMask3);
+            _mm_maskmoveu_si128(value1_1, _mm_unpacklo_epi8(maskForStore1, maskForStore1), reinterpret_cast<char*>(ptrDst));
+            _mm_maskmoveu_si128(value1_2, _mm_unpackhi_epi8(maskForStore1, maskForStore1), reinterpret_cast<char*>(ptrDst + 8));
+            _mm_maskmoveu_si128(value2_1, _mm_unpacklo_epi8(maskForStore2, maskForStore2), reinterpret_cast<char*>(ptrDst + 16));
+            _mm_maskmoveu_si128(value2_2, _mm_unpackhi_epi8(maskForStore2, maskForStore2), reinterpret_cast<char*>(ptrDst + 24));
+            _mm_maskmoveu_si128(value3_1, _mm_unpacklo_epi8(maskForStore3, maskForStore3), reinterpret_cast<char*>(ptrDst + 32));
+            _mm_maskmoveu_si128(value3_2, _mm_unpackhi_epi8(maskForStore3, maskForStore3), reinterpret_cast<char*>(ptrDst + 40));
+
+            ++ptrSrc;
+            ptrDst += 48;
+        }
+
+        FillRemainderLineFromBitonalFromOnes<BgrGray16>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray16*>(ptrDst), valueStruct);
+    }
+}
+
 
 #endif

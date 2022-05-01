@@ -34,8 +34,6 @@ void FillFromBitonalFromOnes_Gray8_NEON(
             uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
             uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
             uint8x8_t notVec = vmvn_u8(vec);
-
-            //uint8x8_t l2 = vand_u8(vld1_u64(ptrDst), notVec);
             uint8x8_t r = vorr_u8(vand_u8(vld1_u64(ptrDst), notVec), vand_u8(vec, value));
             vst1_u64(ptrDst, r);
 
@@ -74,12 +72,8 @@ void FillFromBitonalFromOnes_Gray16_NEON(
             uint16x8_t vecu16 = vmovl_s8(vec);
             uint16x8_t notVecu16 = vmovl_s8(vmvn_u8(vec));
 
-            uint16x8_t m1 = vld1q_u16(ptrDst);
-            uint16x8_t m2 = vandq_u16(m1, notVecu16);
-
-            uint16x8_t m3 = vandq_u16(vecu16, value);
-            uint16x8_t m4 = vorrq_u16(m2, m3);
-            vst1q_u16(ptrDst, m4);
+            uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVecu16), vandq_u16(vecu16, value));
+            vst1q_u16(ptrDst, r);
 
             ++ptrSrc;
             ptrDst += 8;

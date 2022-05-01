@@ -183,3 +183,25 @@ void FillFromBitonalFromOnes_Bgr24_C(
     data.value = BgrGray8{ valueForOnesBlue,valueForOnesGreen,valueForOnesRed };
     FillFromBitonalFromOnes<BgrGray8>(data);
 }
+
+void FillFromBitonalFromOnes_Bgr48_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForOnesRed,
+    std::uint16_t valueForOnesGreen,
+    std::uint16_t valueForOnesBlue)
+{
+    FillFromBitonalData<BgrGray16> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = (BgrGray16*)destination;
+    data.destStride = destinationStride;
+    data.value = BgrGray16{ valueForOnesBlue,valueForOnesGreen,valueForOnesRed };
+    FillFromBitonalFromOnes<BgrGray16>(data);
+}

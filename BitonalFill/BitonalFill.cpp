@@ -21,7 +21,7 @@ static void Test()
     Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
 
     {
-        Bitmap sourceGray8 = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
+       // Bitmap sourceGray8 = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
         Bitmap destGray8_C = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
         Bitmap destGray8_AVX = CreateBitmap(PixelType::Gray8, width, height);
         CopyBitmap(destGray8_AVX, destGray8_C);
@@ -56,7 +56,7 @@ static void Test()
     }
 
     {
-        Bitmap sourceGray16 = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
+       // Bitmap sourceGray16 = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
         Bitmap destGray16_C = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
         Bitmap destGray16_AVX = CreateBitmap(PixelType::Gray16, width, height);
         CopyBitmap(destGray16_AVX, destGray16_C);
@@ -92,7 +92,7 @@ static void Test()
     }
 
     {
-        Bitmap sourceBgr24 = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
+       // Bitmap sourceBgr24 = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
         Bitmap destBgr24_C = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
         Bitmap destBgr24_AVX = CreateBitmap(PixelType::Bgr24, width, height);
         CopyBitmap(destBgr24_AVX, destBgr24_C);
@@ -124,6 +124,41 @@ static void Test()
 
         bool b = Compare(destBgr24_C, destBgr24_AVX);
         cout << "Bgr24: " << (b == true ? "ok" : "error") << endl;
+    }
+
+    {
+        //Bitmap sourceBgr48 = CreateBitmapWithRandomContent(PixelType::Bgr48, width, height);
+        Bitmap destBgr48_C = CreateBitmapWithRandomContent(PixelType::Bgr48, width, height);
+        Bitmap destBgr48_AVX = CreateBitmap(PixelType::Bgr48, width, height);
+        CopyBitmap(destBgr48_AVX, destBgr48_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromOnes_Bgr48_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_C.data.get(), destBgr48_C.stride, 0x4252, 0x4454, 0x8494);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destBgr48_AVX.stride * destBgr48_AVX.height;
+        cout << "Bgr48 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromOnes_Bgr48_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
+#elif BITONALFILL_HASNEON
+      //      FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+#endif
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Bgr48 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destBgr48_C, destBgr48_AVX);
+        cout << "Bgr48: " << (b == true ? "ok" : "error") << endl;
     }
 }
 
@@ -190,11 +225,11 @@ int main()
     Test();
     StressTest();
 
-    /*
+    
     cout << "Hello CMake." << endl;
 
     uint8_t bitonalSrc[] = { 0x88,0x44 };
-    uint8_t gray8Bitmap[16] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 };
+    /*uint8_t gray8Bitmap[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 
     FillFromBitonalFromOnes_Gray8_NEON(16, 1, bitonalSrc, 2, gray8Bitmap, 16, 0xff);
     //FillFromBitonalFromOnes_Gray8_AVX2(16, 1, bitonalSrc, 2, gray8Bitmap, 16, 0xff);
@@ -206,6 +241,8 @@ int main()
     uint8_t bgr24Bitmap[16 * 3] = { 1, 3, 5, 2, 3, 5, 3, 3, 5, 4, 3, 5, 5, 3, 5, 6, 3, 5, 7, 3, 5, 8, 3, 5, 9, 3, 5, 10, 3, 5, 11, 3, 5, 12, 3, 5, 13, 3, 5, 14, 3, 5, 15, 3, 5, 16, 3, 5 };
     FillFromBitonalFromOnes_Bgr24_AVX2(16, 1, bitonalSrc, 2, bgr24Bitmap, 16 * 3, 0xf1, 0xf2, 0xf3);
     */
+    uint16_t bgr48Bitmap[16 * 3] = { 1, 3, 5, 2, 3, 5, 3, 3, 5, 4, 3, 5, 5, 3, 5, 6, 3, 5, 7, 3, 5, 8, 3, 5, 9, 3, 5, 10, 3, 5, 11, 3, 5, 12, 3, 5, 13, 3, 5, 14, 3, 5, 15, 3, 5, 16, 3, 5 };
+    FillFromBitonalFromOnes_Bgr48_AVX2(16, 1, bitonalSrc, 2, bgr48Bitmap, 16 * 3, 0xf1e1, 0xf2e2, 0xf3e3);
 
     return 0;
 }
