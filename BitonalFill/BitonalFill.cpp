@@ -232,6 +232,7 @@ static void StressTest()
 int main()
 {
     Test();
+    cout << endl << endl;
     StressTest();
 
     /*

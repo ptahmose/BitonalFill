@@ -177,7 +177,7 @@ void FillFromBitonalFromOnes_Bgr48_AVX2(
     static const __m128i shuffleConstMask1 = _mm_setr_epi8(0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x02, 0x02, 0x02, 0x03, 0x03, 0x03, 0x04, 0x04, 0x04, 0x05);
     static const __m128i shuffleConstMask2 = _mm_setr_epi8(0x05, 0x05, 0x06, 0x06, 0x06, 0x07, 0x07, 0x07, 0x08, 0x08, 0x08, 0x09, 0x09, 0x09, 0x0a, 0x0a);
     static const __m128i shuffleConstMask3 = _mm_setr_epi8(0x0a, 0x0b, 0x0b, 0x0b, 0x0c, 0x0c, 0x0c, 0x0d, 0x0d, 0x0d, 0x0e, 0x0e, 0x0e, 0x0f, 0x0f, 0x0f);
-    const __m128i value = _mm_set1_epi64x(((((__int64)valueForOnesRed) << 32) | (((__int64)valueForOnesGreen) << 16) | valueForOnesBlue));
+    const __m128i value = _mm_set1_epi64x(((static_cast<long long>(valueForOnesRed) << 32) | (static_cast<long long>(valueForOnesGreen) << 16) | valueForOnesBlue));
     const __m128i value1_1 = _mm_shuffle_epi8(value, shuffleConstValue1_1);
     const __m128i value1_2 = _mm_shuffle_epi8(value, shuffleConstValue1_2);
     const __m128i value2_1 = _mm_shuffle_epi8(value, shuffleConstValue2_1);
