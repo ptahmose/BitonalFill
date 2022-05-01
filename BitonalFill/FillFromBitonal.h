@@ -125,4 +125,14 @@ void FillFromBitonalFromOnes_Bgr24_NEON(
     std::uint8_t valueForOnesGreen,
     std::uint8_t valueForOnesBlue);
 
+void FillFromBitonalFromOnes_Bgr48_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForOnesRed,
+    std::uint16_t valueForOnesGreen,
+    std::uint16_t valueForOnesBlue);
 #endif
