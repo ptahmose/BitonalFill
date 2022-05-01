@@ -68,8 +68,8 @@ void FillFromBitonalFromOnes_Gray16_NEON(
         {
             const uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
             const uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
-            const uint16x8_t vec16 = vreinterpret_u16_s16(vmovl_s8(vreinterpret_s8_u8(vec)));
-            const uint16x8_t notVec16 = vreinterpret_u16_s16(vmovl_s8(vmvn_u8(vec)));
+            const uint16x8_t vec16 = vreinterpretq_u16_s16(vmovl_s8(vreinterpret_s8_u8(vec)));
+            const uint16x8_t notVec16 = vreinterpretq_u16_s16(vmovl_s8(vmvn_u8(vec)));
 
             const uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16((uint64_t*)ptrDst), notVec16), vandq_u16(vec16, value));
             vst1q_u16(ptrDst, r);
