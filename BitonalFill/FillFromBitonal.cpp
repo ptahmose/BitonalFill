@@ -79,47 +79,6 @@ void FillFromBitonalFromOnes_Gray8_C(
     data.destStride = destinationStride;
     data.value = valueForOnes;
     FillFromBitonalFromOnes<uint8_t>(data);
-
-    /*const uint32_t widthOverEight = width / 8;
-    const uint32_t widthRemainder = width % 8;
-    for (uint32_t y = 0; y < height; ++y)
-    {
-        uint8_t* ptrDest = destination + static_cast<size_t>(y) * destinationStride;
-        const uint8_t* ptrSrc = sourceBitonal + static_cast<size_t>(y) * sourceBitonalStride;
-
-        for (uint32_t x_over_eight = 0; x_over_eight < widthOverEight; ++x_over_eight)
-        {
-            uint8_t v = *ptrSrc;
-            uint8_t mask = 1;
-            for (uint8_t i = 0; i < 8; ++i)
-            {
-                if (v & mask)
-                {
-                    ptrDest[i] = valueForOnes;
-                }
-
-                mask <<= 1;
-            }
-
-            ++ptrSrc;
-            ptrDest += 8;
-        }
-
-        if (widthRemainder > 0)
-        {
-            uint8_t v = *ptrSrc;
-            uint8_t mask = 1;
-            for (uint32_t i = 0; i < widthRemainder; ++i)
-            {
-                if (v & mask)
-                {
-                    ptrDest[i] = valueForOnes;
-                }
-
-                mask <<= 1;
-            }
-        }
-    }*/
 }
 
 void FillFromBitonalFromOnes_Gray16_C(
