@@ -1,6 +1,8 @@
 #include "FillFromBitonalFillTest.h"
 
 #include <random>
+#include <cstdlib>
+#include <stdexcept>
 
 using namespace std;
 
