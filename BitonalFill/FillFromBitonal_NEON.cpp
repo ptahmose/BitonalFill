@@ -156,7 +156,7 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
     const uint16x8_t valueRed = vmovq_n_u16(valueForOnesRed);
     const uint16x8_t valueGreen = vmovq_n_u16(valueForOnesGreen);
     const uint16x8_t valueBlue = vmovq_n_u16(valueForOnesBlue);
-    uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
+    const uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
 
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
