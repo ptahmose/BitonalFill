@@ -3,6 +3,7 @@
 #include <random>
 #include <cstdlib>
 #include <stdexcept>
+#include <cstring>
 
 using namespace std;
 

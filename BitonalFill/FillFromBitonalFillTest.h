@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <cstdlib>
 
 enum class PixelType
 {
@@ -41,7 +42,7 @@ private:
     std::uint32_t width_;
     std::uint32_t height_;
 
-    std::unique_ptr<std::uint8_t, decltype(&free)> bitonalBitmap;
+    std::unique_ptr<std::uint8_t, decltype(&std::free)> bitonalBitmap;
     std::uint32_t bitonalBitmapStride;
 public:
     FillFromBitonalTest(std::uint32_t width, std::uint32_t height);
