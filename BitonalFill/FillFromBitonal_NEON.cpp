@@ -54,7 +54,7 @@ void FillFromBitonalFromOnes_Gray16_NEON(
     std::uint32_t destinationStride,
     std::uint16_t valueForOnes)
 {
-    uint16x8_t value = vmovq_n_u16(valueForOnes);
+    const uint16x8_t value = vmovq_n_u16(valueForOnes);
     uint8x8_t bitSelectMask;
     bitSelectMask.n64_u64[0] = 0x0102040810204080;
 
@@ -67,12 +67,12 @@ void FillFromBitonalFromOnes_Gray16_NEON(
 
         for (uint32_t x8 = 0; x8 < widthOver8; ++x8)
         {
-            uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
-            uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
-            uint16x8_t vecu16 = vmovl_s8(vec);
-            uint16x8_t notVecu16 = vmovl_s8(vmvn_u8(vec));
+            const uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
+            const uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
+            const uint16x8_t vec16 = vmovl_s8(vec);
+            const uint16x8_t notVec16 = vmovl_s8(vmvn_u8(vec));
 
-            uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVecu16), vandq_u16(vecu16, value));
+            const uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec16), vandq_u16(vec16, value));
             vst1q_u16(ptrDst, r);
 
             ++ptrSrc;
@@ -173,13 +173,13 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
             uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
             uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
             uint16x8_t vec16 = vmovl_s8(vec);
-            uint16x8_t notVecu16 = vmovl_s8(vmvn_u8(vec));
+            uint16x8_t notVec16 = vmovl_s8(vmvn_u8(vec));
 
             uint16x8x3_t m1 = vld3q_u16(ptrDst);
 
-            uint16x8_t m2_1 = vandq_u16(m1.val[0], notVecu16);
-            uint16x8_t m2_2 = vandq_u16(m1.val[1], notVecu16);
-            uint16x8_t m2_3 = vandq_u16(m1.val[2], notVecu16);
+            uint16x8_t m2_1 = vandq_u16(m1.val[0], notVec16);
+            uint16x8_t m2_2 = vandq_u16(m1.val[1], notVec16);
+            uint16x8_t m2_3 = vandq_u16(m1.val[2], notVec16);
 
             uint16x8_t m3_1 = vandq_u16(vec16, valueBlue);
             uint16x8_t m3_2 = vandq_u16(vec16, valueGreen);
