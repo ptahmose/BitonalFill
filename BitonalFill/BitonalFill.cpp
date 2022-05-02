@@ -8,7 +8,6 @@
 #include "FillFromBitonal.h"
 #include "FillFromBitonalFillTest.h"
 
-
 using namespace std;
 
 static void Test()
