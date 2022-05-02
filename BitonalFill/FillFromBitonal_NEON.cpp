@@ -209,7 +209,7 @@ void FillFromBitonalFromOnes_Float32_NEON(
     std::uint32_t destinationStride,
     float valueForOnes)
 {
-    const float32x4_t value = vmovq_n_f32(valueForOnes);
+    const uint32x4_t value = vreinterpretq_u32_f32(vmovq_n_f32(valueForOnes));
     uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
 
     const uint32_t widthOver8 = width / 8;
@@ -228,16 +228,16 @@ void FillFromBitonalFromOnes_Float32_NEON(
             const int16x8_t notVec16 = vmovl_s8(vreinterpret_s8_u8(vmvn_u8(vec)));
             const uint32x4_t vec32Lo = vreinterpretq_u32_s32(vmovl_s16(vget_low_s16(vec16)));
             const uint32x4_t vec32Hi = vreinterpretq_u32_s32(vmovl_s16(vget_high_s16(vec16)));
-            const uint32x4_t notVec32Lo = vmovl_s16(vget_low_s16(notVec16));
-            const uint32x4_t notVec32Hi = vmovl_s16(vget_high_s16(notVec16));
+            const uint32x4_t notVec32Lo = vreinterpretq_u32_s32(vmovl_s16(vget_low_s16(notVec16)));
+            const uint32x4_t notVec32Hi = vreinterpretq_u32_s32(vmovl_s16(vget_high_s16(notVec16)));
 
             //const uint16x8_t vec16 = vreinterpretq_u16_s16(vmovl_s8(vreinterpret_s8_u8(vec)));
             //const uint16x8_t notVec16 = vreinterpretq_u16_s16(vmovl_s8(vreinterpret_s8_u8(vmvn_u8(vec))));
 
-            uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec32Lo), vandq_u16(vec32Lo, value));
+            uint16x8_t r = vorrq_u32(vandq_u32(vld1q_u16(ptrDst), notVec32Lo), vandq_u32(vec32Lo, value));
             vst1q_u16(ptrDst, r);
             ptrDst += 4;
-            r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec32Hi), vandq_u16(vec32Hi, value));
+            r = vorrq_u32(vandq_u32(vld1q_u32(ptrDst), notVec32Hi), vandq_u32(vec32Hi, value));
             vst1q_u16(ptrDst, r);
 
             /*
