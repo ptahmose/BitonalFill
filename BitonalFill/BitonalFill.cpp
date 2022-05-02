@@ -53,7 +53,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Gray8 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB / s" << endl;
+        cout << "Gray8 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
         bool b = Compare(destGray8_C, destGray8_AVX);
         cout << "Gray8: " << (b == true ? "ok" : "error") << endl;
