@@ -17,6 +17,12 @@ static void Test()
     const uint32_t width = 2048;
     const uint32_t height = 2048;
 
+#if BITONALFILL_HASAVX
+    static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+    static const char* SimdName = "NEON";
+#endif
+
     Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
 
     {
@@ -47,7 +53,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Gray8 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+        cout << "Gray8 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB / s" << endl;
 
         bool b = Compare(destGray8_C, destGray8_AVX);
         cout << "Gray8: " << (b == true ? "ok" : "error") << endl;
@@ -82,7 +88,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Gray16 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+        cout << "Gray16 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
         bool b = Compare(destGray16_C, destGray16_AVX);
         cout << "Gray16: " << (b == true ? "ok" : "error") << endl;
@@ -116,7 +122,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Bgr24 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+        cout << "Bgr24 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
         bool b = Compare(destBgr24_C, destBgr24_AVX);
         cout << "Bgr24: " << (b == true ? "ok" : "error") << endl;
@@ -150,7 +156,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Bgr48 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+        cout << "Bgr48 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
         bool b = Compare(destBgr48_C, destBgr48_AVX);
         cout << "Bgr48: " << (b == true ? "ok" : "error") << endl;
@@ -185,7 +191,7 @@ static void Test()
 
         end = std::chrono::high_resolution_clock::now();
         elapsed_seconds = end - start;
-        cout << "Float32 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+        cout << "Float32 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
         bool b = Compare(destFloat32_C, destFloat32_AVX);
         cout << "Float32: " << (b == true ? "ok" : "error") << endl;
@@ -294,7 +300,7 @@ int main()
     FillFromBitonalFromOnes_Bgr24_AVX2(16, 1, bitonalSrc, 2, bgr24Bitmap, 16 * 3, 0xf1, 0xf2, 0xf3);
     uint16_t bgr48Bitmap[16 * 3] = { 1, 3, 5, 2, 3, 5, 3, 3, 5, 4, 3, 5, 5, 3, 5, 6, 3, 5, 7, 3, 5, 8, 3, 5, 9, 3, 5, 10, 3, 5, 11, 3, 5, 12, 3, 5, 13, 3, 5, 14, 3, 5, 15, 3, 5, 16, 3, 5 };
     FillFromBitonalFromOnes_Bgr48_AVX2(16, 1, bitonalSrc, 2, bgr48Bitmap, 16 * 3, 0xf1e1, 0xf2e2, 0xf3e3);
-    
+
     float float32Bitmap[16] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16 };
     FillFromBitonalFromOnes_Float32_NEON(16, 1, bitonalSrc, 2, float32Bitmap, 16 * 4, 1.42f);
     */
