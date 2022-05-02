@@ -283,8 +283,6 @@ int main()
     StressTest();
 
     /*
-    cout << "Hello CMake." << endl;
-
     uint8_t bitonalSrc[] = { 0x88,0x44 };
     uint8_t gray8Bitmap[16] = {1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
 
