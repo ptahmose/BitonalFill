@@ -226,8 +226,8 @@ void FillFromBitonalFromOnes_Float32_NEON(
 
             const int16x8_t vec16 = vmovl_s8(vreinterpret_s8_u8(vec));
             const int16x8_t notVec16 = vmovl_s8(vreinterpret_s8_u8(vmvn_u8(vec)));
-            const uint32x4_t vec32Lo = vreinterpret_u32_s32(vmovl_s16(vget_low_s16(vec16)));
-            const uint32x4_t vec32Hi = vreinterpret_u32_s32(vmovl_s16(vget_high_s16(vec16)));
+            const uint32x4_t vec32Lo = vreinterpretq_u32_s32(vmovl_s16(vget_low_s16(vec16)));
+            const uint32x4_t vec32Hi = vreinterpretq_u32_s32(vmovl_s16(vget_high_s16(vec16)));
             const uint32x4_t notVec32Lo = vmovl_s16(vget_low_s16(notVec16));
             const uint32x4_t notVec32Hi = vmovl_s16(vget_high_s16(notVec16));
 
