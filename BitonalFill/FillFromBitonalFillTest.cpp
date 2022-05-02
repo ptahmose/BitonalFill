@@ -21,6 +21,8 @@ size_t Bitmap::GetLineLength() const
         return this->width * 6;
     case PixelType::Bitonal:
         return (width + 7) / 8;
+    case PixelType::Float32:
+        return width * 4;
     default:
         throw exception();
     }
@@ -83,6 +85,9 @@ Bitmap CreateBitmap(PixelType pixeltype, std::uint32_t width, std::uint32_t heig
     case PixelType::Bitonal:
         bitmap.stride = (width + 7) / 8;
         break;
+    case PixelType::Float32:
+        bitmap.stride = width * 4;
+        break;
     default:
         throw exception();
     }
@@ -136,6 +141,9 @@ bool Compare(const Bitmap& a, const Bitmap& b)
         break;
     case PixelType::Bgr48:
         bytesPerPel = 6;
+        break;
+    case PixelType::Float32:
+        bytesPerPel = 4;
         break;
     default:
         return false;

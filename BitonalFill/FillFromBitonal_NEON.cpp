@@ -200,6 +200,59 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
     }
 }
 
+void FillFromBitonalFromOnes_Float32_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    float* destination,
+    std::uint32_t destinationStride,
+    float valueForOnes)
+{
+    const float32x4_t value = vmovq_n_f32(valueForOnes);
+    uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
+
+    const uint32_t widthOver8 = width / 8;
+    const uint32_t widthRemainder = width % 8;
+    for (uint32_t y = 0; y < height; ++y)
+    {
+        const uint8_t* ptrSrc = (sourceBitonal + static_cast<size_t>(y) * sourceBitonalStride);
+        float* ptrDst = reinterpret_cast<float*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destinationStride);
+
+        for (uint32_t x8 = 0; x8 < widthOver8; ++x8)
+        {
+            const uint8x8_t bitonal = vdup_n_u8(*ptrSrc);
+            const uint8x8_t vec = vtst_u8(bitSelectMask, bitonal);
+
+            const int16x8_t vec16 = vmovl_s8(vreinterpret_s8_u8(vec));
+            const int16x8_t notVec16 = vmovl_s8(vreinterpret_s8_u8(vmvn_u8(vec)));
+            const uint32x4_t vec32Lo = vreinterpret_u32_s32(vmovl_s16(vget_low_s16(vec16)));
+            const uint32x4_t vec32Hi = vreinterpret_u32_s32(vmovl_s16(vget_high_s16(vec16)));
+            const uint32x4_t notVec32Lo = vmovl_s16(vget_low_s16(notVec16));
+            const uint32x4_t notVec32Hi = vmovl_s16(vget_high_s16(notVec16));
+
+            //const uint16x8_t vec16 = vreinterpretq_u16_s16(vmovl_s8(vreinterpret_s8_u8(vec)));
+            //const uint16x8_t notVec16 = vreinterpretq_u16_s16(vmovl_s8(vreinterpret_s8_u8(vmvn_u8(vec))));
+
+            uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec32Lo), vandq_u16(vec32Lo, value));
+            vst1q_u16(ptrDst, r);
+            ptrDst += 4;
+            r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec32Hi), vandq_u16(vec32Hi, value));
+            vst1q_u16(ptrDst, r);
+
+            /*
+            const uint16x8_t r = vorrq_u16(vandq_u16(vld1q_u16(ptrDst), notVec16), vandq_u16(vec16, value));
+            vst1q_u16(ptrDst, r);
+            */
+
+            ++ptrSrc;
+            ptrDst += 4;
+        }
+
+        FillRemainderLineFromBitonalFromOnes<float>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+    }
+}
+
 #endif
 
 

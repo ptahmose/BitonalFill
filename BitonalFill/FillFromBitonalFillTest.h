@@ -11,7 +11,8 @@ enum class PixelType
     Gray8,
     Gray16,
     Bgr24,
-    Bgr48
+    Bgr48,
+    Float32
 };
 
 struct Bitmap

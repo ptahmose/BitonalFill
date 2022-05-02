@@ -93,6 +93,15 @@ void FillFromBitonalFromOnes_Bgr48_AVX2(
     std::uint16_t valueForOnesRed,
     std::uint16_t valueForOnesGreen,
     std::uint16_t valueForOnesBlue);
+
+void FillFromBitonalFromOnes_Float32_AVX2(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    float* destination,
+    std::uint32_t destinationStride,
+    float valueForOnes);
 #endif
 
 #if BITONALFILL_HASNEON
@@ -135,4 +144,13 @@ void FillFromBitonalFromOnes_Bgr48_NEON(
     std::uint16_t valueForOnesRed,
     std::uint16_t valueForOnesGreen,
     std::uint16_t valueForOnesBlue);
+
+void FillFromBitonalFromOnes_Float32_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    float* destination,
+    std::uint32_t destinationStride,
+    float valueForOnes);
 #endif
