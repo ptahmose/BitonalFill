@@ -16,10 +16,6 @@ add_executable (BitonalFill
                 "FillFromBitonalFillTest.cpp" 
                 "FillFromBitonalFillTest.h" "FillFromBitonal_NEON.cpp" "FillRemainderLine.h")
 
- if (MSVC)
-  set_source_files_properties(FillFromBitonal_AVX2.cpp PROPERTIES COMPILE_FLAGS /arch:AVX2)
-endif()
-
 # check whether we can use AVX2-instructions -> we check for the presence of the file
 CHECK_INCLUDE_FILES(immintrin.h IMMINTRINFOUND)
 if (IMMINTRINFOUND)

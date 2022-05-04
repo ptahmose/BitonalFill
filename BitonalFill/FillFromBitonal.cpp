@@ -15,8 +15,8 @@ struct FillFromBitonalData
     T value;
 };
 
-template <typename T>
-void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
+template <typename T, class Op>
+void FillFromBitonalFromOneOrZero(const FillFromBitonalData<T>& info, const Op& op)
 {
     const uint32_t widthOverEight = info.width / 8;
     const uint32_t widthRemainder = info.width % 8;
@@ -32,7 +32,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
             uint8_t mask = 0x80;
             for (uint8_t i = 0; i < 8; ++i)
             {
-                if (v & mask)
+                if (op(v & mask))
                 {
                     ptrDest[i] = info.value;
                 }
@@ -50,7 +50,7 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
             uint8_t mask = 0x80;
             for (uint32_t i = 0; i < widthRemainder; ++i)
             {
-                if (v & mask)
+                if (op(v & mask))
                 {
                     ptrDest[i] = info.value;
                 }
@@ -59,6 +59,30 @@ void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
             }
         }
     }
+}
+
+template <typename T>
+void FillFromBitonalFromOnes(const FillFromBitonalData<T>& info)
+{
+    struct Condition
+    {
+        bool operator()(bool b) const { return b; }
+    };
+
+    Condition cond;
+    return FillFromBitonalFromOneOrZero<T>(info, cond);
+}
+
+template <typename T>
+void FillFromBitonalFromZeroes(const FillFromBitonalData<T>& info)
+{
+    struct Condition
+    {
+        bool operator()(bool b) const { return !b; }
+    };
+
+    Condition cond;
+    return FillFromBitonalFromOneOrZero<T>(info, cond);
 }
 
 void FillFromBitonalFromOnes_Gray8_C(
@@ -163,4 +187,108 @@ void FillFromBitonalFromOnes_Bgr48_C(
     data.destStride = destinationStride;
     data.value = BgrGray16{ valueForOnesBlue,valueForOnesGreen,valueForOnesRed };
     FillFromBitonalFromOnes<BgrGray16>(data);
+}
+
+void FillFromBitonalFromZeroes_Gray8_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForZeroes)
+{
+    FillFromBitonalData<uint8_t> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = destination;
+    data.destStride = destinationStride;
+    data.value = valueForZeroes;
+    FillFromBitonalFromZeroes<uint8_t>(data);
+}
+
+void FillFromBitonalFromZeroes_Gray16_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForZeroes)
+{
+    FillFromBitonalData<uint16_t> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = destination;
+    data.destStride = destinationStride;
+    data.value = valueForZeroes;
+    FillFromBitonalFromZeroes<uint16_t>(data);
+}
+
+void FillFromBitonalFromZeroes_Bgr24_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForZeroesRed,
+    std::uint8_t valueForZeroesGreen,
+    std::uint8_t valueForZeroesBlue)
+{
+    FillFromBitonalData<BgrGray8> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = (BgrGray8*)destination;
+    data.destStride = destinationStride;
+    data.value = BgrGray8{ valueForZeroesBlue,valueForZeroesGreen,valueForZeroesRed };
+    FillFromBitonalFromZeroes<BgrGray8>(data);
+}
+
+void FillFromBitonalFromZeroes_Bgr48_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForZeroesRed,
+    std::uint16_t valueForZeroesGreen,
+    std::uint16_t valueForZeroesBlue)
+{
+    FillFromBitonalData<BgrGray16> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = (BgrGray16*)destination;
+    data.destStride = destinationStride;
+    data.value = BgrGray16{ valueForZeroesBlue,valueForZeroesGreen,valueForZeroesRed };
+    FillFromBitonalFromZeroes<BgrGray16>(data);
+}
+
+void FillFromBitonalFromZeroes_Float32_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    float* destination,
+    std::uint32_t destinationStride,
+    float valueForZeroes)
+{
+    FillFromBitonalData<float> data;
+    data.width = width;
+    data.height = height;
+    data.ptrSrc = sourceBitonal;
+    data.srcStride = sourceBitonalStride;
+    data.ptrDest = destination;
+    data.destStride = destinationStride;
+    data.value = valueForZeroes;
+    FillFromBitonalFromZeroes<float>(data);
 }

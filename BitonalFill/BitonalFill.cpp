@@ -10,7 +10,7 @@
 
 using namespace std;
 
-static void Test()
+static void TestFromBitonalZeroes()
 {
     const uint32_t REPEAT = 100;
     const uint32_t width = 2048;
@@ -22,6 +22,199 @@ static void Test()
     static const char* SimdName = "NEON";
 #endif
 
+    cout << "FillFromZeroes:" << endl;
+    cout << "===============" << endl;
+
+    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
+
+    {
+        Bitmap destGray8_C = CreateBitmapWithRandomContent(PixelType::Gray8, width, height);
+        Bitmap destGray8_AVX = CreateBitmap(PixelType::Gray8, width, height);
+        CopyBitmap(destGray8_AVX, destGray8_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromZeroes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_C.data.get(), destGray8_C.stride, 0x42);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destGray8_AVX.stride * destGray8_AVX.height;
+        cout << "Gray8 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromZeroes_Gray8_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromZeroes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+#endif
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Gray8 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destGray8_C, destGray8_AVX);
+        cout << "Gray8: " << (b == true ? "ok" : "error") << endl;
+    }
+
+    {
+        Bitmap destGray16_C = CreateBitmapWithRandomContent(PixelType::Gray16, width, height);
+        Bitmap destGray16_AVX = CreateBitmap(PixelType::Gray16, width, height);
+        CopyBitmap(destGray16_AVX, destGray16_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromZeroes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_C.data.get(), destGray16_C.stride, 0x4245);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destGray16_AVX.stride * destGray16_AVX.height;
+        cout << "Gray16 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromZeroes_Gray16_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromZeroes_Gray16_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
+#endif
+
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Gray16 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destGray16_C, destGray16_AVX);
+        cout << "Gray16: " << (b == true ? "ok" : "error") << endl;
+    }
+
+    {
+        Bitmap destBgr24_C = CreateBitmapWithRandomContent(PixelType::Bgr24, width, height);
+        Bitmap destBgr24_AVX = CreateBitmap(PixelType::Bgr24, width, height);
+        CopyBitmap(destBgr24_AVX, destBgr24_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromZeroes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_C.data.get(), destBgr24_C.stride, 0x42, 0x44, 0x84);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destBgr24_AVX.stride * destBgr24_AVX.height;
+        cout << "Bgr24 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromZeroes_Bgr24_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromZeroes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+#endif
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Bgr24 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destBgr24_C, destBgr24_AVX);
+        cout << "Bgr24: " << (b == true ? "ok" : "error") << endl;
+    }
+
+    {
+        Bitmap destBgr48_C = CreateBitmapWithRandomContent(PixelType::Bgr48, width, height);
+        Bitmap destBgr48_AVX = CreateBitmap(PixelType::Bgr48, width, height);
+        CopyBitmap(destBgr48_AVX, destBgr48_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromZeroes_Bgr48_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_C.data.get(), destBgr48_C.stride, 0x4252, 0x4454, 0x8494);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destBgr48_AVX.stride * destBgr48_AVX.height;
+        cout << "Bgr48 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromZeroes_Bgr48_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromZeroes_Bgr48_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
+#endif
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Bgr48 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destBgr48_C, destBgr48_AVX);
+        cout << "Bgr48: " << (b == true ? "ok" : "error") << endl;
+    }
+
+    {
+        Bitmap destFloat32_C = CreateBitmapWithRandomContent(PixelType::Float32, width, height);
+        Bitmap destFloat32_AVX = CreateBitmap(PixelType::Float32, width, height);
+        CopyBitmap(destFloat32_AVX, destFloat32_C);
+
+        auto start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+            FillFromBitonalFromZeroes_Float32_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_C.data.get(), destFloat32_C.stride, 1.2345f);
+        }
+
+        auto end = std::chrono::high_resolution_clock::now();
+        std::chrono::duration<double> elapsed_seconds = end - start;
+        size_t dataSize = destFloat32_AVX.stride * destFloat32_AVX.height;
+        cout << "Float32 (C)" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        start = std::chrono::high_resolution_clock::now();
+        for (uint32_t i = 0; i < REPEAT; ++i)
+        {
+#if BITONALFILL_HASAVX
+            FillFromBitonalFromZeroes_Float32_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_AVX.data.get(), destFloat32_AVX.stride, 1.2345f);
+#elif BITONALFILL_HASNEON
+            FillFromBitonalFromZeroes_Float32_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_AVX.data.get(), destFloat32_AVX.stride, 1.2345f);
+#endif
+
+        }
+
+        end = std::chrono::high_resolution_clock::now();
+        elapsed_seconds = end - start;
+        cout << "Float32 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+        bool b = Compare(destFloat32_C, destFloat32_AVX);
+        cout << "Float32: " << (b == true ? "ok" : "error") << endl;
+    }
+}
+
+static void TestFromBitonalOnes()
+{
+    const uint32_t REPEAT = 100;
+    const uint32_t width = 2048;
+    const uint32_t height = 2048;
+
+#if BITONALFILL_HASAVX
+    static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+    static const char* SimdName = "NEON";
+#endif
+
+    cout << "FillFromOnes:" << endl;
+    cout << "=============" << endl;
+    
     Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
 
     {
@@ -44,7 +237,7 @@ static void Test()
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
 #if BITONALFILL_HASAVX
-            FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
+            FillFromBitonalFromOnes_Gray8_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
 #elif BITONALFILL_HASNEON
             FillFromBitonalFromOnes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destGray8_AVX.data.get(), destGray8_AVX.stride, 0x42);
 #endif
@@ -78,7 +271,7 @@ static void Test()
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
 #if BITONALFILL_HASAVX
-            FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
+            FillFromBitonalFromOnes_Gray16_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
 #elif BITONALFILL_HASNEON
             FillFromBitonalFromOnes_Gray16_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destGray16_AVX.data.get(), destGray16_AVX.stride, 0x4245);
 #endif
@@ -113,7 +306,7 @@ static void Test()
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
 #if BITONALFILL_HASAVX
-            FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
+            FillFromBitonalFromOnes_Bgr24_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
 #elif BITONALFILL_HASNEON
             FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)destBgr24_AVX.data.get(), destBgr24_AVX.stride, 0x42, 0x44, 0x84);
 #endif
@@ -147,7 +340,7 @@ static void Test()
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
 #if BITONALFILL_HASAVX
-            FillFromBitonalFromOnes_Bgr48_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
+            FillFromBitonalFromOnes_Bgr48_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
 #elif BITONALFILL_HASNEON
             FillFromBitonalFromOnes_Bgr48_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)destBgr48_AVX.data.get(), destBgr48_AVX.stride, 0x4252, 0x4454, 0x8494);
 #endif
@@ -181,7 +374,7 @@ static void Test()
         for (uint32_t i = 0; i < REPEAT; ++i)
         {
 #if BITONALFILL_HASAVX
-            FillFromBitonalFromOnes_Float32_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_AVX.data.get(), destFloat32_AVX.stride, 1.2345f);
+            FillFromBitonalFromOnes_Float32_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_AVX.data.get(), destFloat32_AVX.stride, 1.2345f);
 #elif BITONALFILL_HASNEON
             FillFromBitonalFromOnes_Float32_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)destFloat32_AVX.data.get(), destFloat32_AVX.stride, 1.2345f);
 #endif
@@ -208,7 +401,7 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     case PixelType::Gray8:
         FillFromBitonalFromOnes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48);
 #if BITONALFILL_HASAVX
-        FillFromBitonalFromOnes_Gray8_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+        FillFromBitonalFromOnes_Gray8_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
 #elif BITONALFILL_HASNEON
         FillFromBitonalFromOnes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
 #endif
@@ -216,7 +409,7 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     case PixelType::Gray16:
         FillFromBitonalFromOnes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4849);
 #if BITONALFILL_HASAVX
-        FillFromBitonalFromOnes_Gray16_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+        FillFromBitonalFromOnes_Gray16_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
 #elif BITONALFILL_HASNEON
         FillFromBitonalFromOnes_Gray16_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
 #endif
@@ -224,7 +417,7 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     case PixelType::Bgr24:
         FillFromBitonalFromOnes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48, 0x49, 0x4a);
 #if BITONALFILL_HASAVX
-        FillFromBitonalFromOnes_Bgr24_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+        FillFromBitonalFromOnes_Bgr24_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
 #elif BITONALFILL_HASNEON
         FillFromBitonalFromOnes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
 #endif
@@ -232,7 +425,7 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     case PixelType::Bgr48:
         FillFromBitonalFromOnes_Bgr48_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4858, 0x4959, 0x4a5a);
 #if BITONALFILL_HASAVX
-        FillFromBitonalFromOnes_Bgr48_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
+        FillFromBitonalFromOnes_Bgr48_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
 #elif BITONALFILL_HASNEON
         FillFromBitonalFromOnes_Bgr48_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
 #endif
@@ -240,7 +433,7 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     case PixelType::Float32:
         FillFromBitonalFromOnes_Float32_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_C.data.get(), dest_C.stride, 42.4f);
 #if BITONALFILL_HASAVX
-        FillFromBitonalFromOnes_Float32_AVX2(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_Simd.data.get(), dest_Simd.stride, 42.4f);
+        FillFromBitonalFromOnes_Float32_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_Simd.data.get(), dest_Simd.stride, 42.4f);
 #elif BITONALFILL_HASNEON
         FillFromBitonalFromOnes_Float32_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_Simd.data.get(), dest_Simd.stride, 42.4f);
 #endif
@@ -278,7 +471,8 @@ static void StressTest()
 
 int main()
 {
-    Test();
+    TestFromBitonalZeroes();
+    TestFromBitonalOnes();
     cout << endl << endl;
     StressTest();
 
