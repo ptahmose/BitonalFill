@@ -292,7 +292,7 @@ void FillFromBitonalFromZeroesOrOnes_Float32_NEON(
 
 struct FromOnes
 {
-    static constexpr  bool isFromOnes = true;
+    static constexpr bool isFromOnes = true;
 
     uint8x8_t operator()(uint8x8_t a, uint8x8_t b) const
     {
