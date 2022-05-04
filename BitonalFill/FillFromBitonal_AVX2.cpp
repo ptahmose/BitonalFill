@@ -78,7 +78,14 @@ void FillFromBitonalFromZeroesOrOnes_Gray8_AVX(
             ptrDst += 16;
         }
 
-        FillRemainderLineFromBitonalFromOnes<uint8_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        if (T::isFromOnes)
+        {
+            FillRemainderLineFromBitonalFromOnes<uint8_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
+        else
+        {
+            FillRemainderLineFromBitonalFromZeroes<uint8_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
     }
 }
 
@@ -125,7 +132,14 @@ void FillFromBitonalFromZeroesOrOnes_Gray16_AVX(
             ptrDst += 16;
         }
 
-        FillRemainderLineFromBitonalFromOnes<uint16_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        if (T::isFromOnes)
+        {
+            FillRemainderLineFromBitonalFromOnes<uint16_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
+        else
+        {
+            FillRemainderLineFromBitonalFromZeroes<uint16_t>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
     }
 }
 
@@ -185,7 +199,14 @@ void FillFromBitonalFromZeroesOrOnes_Bgr24_AVX(
             ptrDst += 48;
         }
 
-        FillRemainderLineFromBitonalFromOnes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
+        if (T::isFromOnes)
+        {
+            FillRemainderLineFromBitonalFromOnes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
+        }
+        else
+        {
+            FillRemainderLineFromBitonalFromZeroes<BgrGray8>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray8*>(ptrDst), valueStruct);
+        }
     }
 }
 
@@ -248,7 +269,14 @@ void FillFromBitonalFromZeroesOrOnes_Bgr48_AVX(
             ptrDst += 48;
         }
 
-        FillRemainderLineFromBitonalFromOnes<BgrGray16>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray16*>(ptrDst), valueStruct);
+        if (T::isFromOnes)
+        {
+            FillRemainderLineFromBitonalFromOnes<BgrGray16>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray16*>(ptrDst), valueStruct);
+        }
+        else
+        {
+            FillRemainderLineFromBitonalFromZeroes<BgrGray16>(widthRemainder, reinterpret_cast<const uint8_t*>(ptrSrc), reinterpret_cast<BgrGray16*>(ptrDst), valueStruct);
+        }
     }
 }
 
@@ -298,12 +326,21 @@ void FillFromBitonalFromZeroesOrOnes_Float32_AVX(
             ptrDst += 16;
         }
 
-        FillRemainderLineFromBitonalFromOnes<float>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        if (T::isFromOnes)
+        {
+            FillRemainderLineFromBitonalFromOnes<float>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
+        else
+        {
+            FillRemainderLineFromBitonalFromZeroes<float>(widthRemainder, (const uint8_t*)ptrSrc, ptrDst, valueForOnes);
+        }
     }
 }
 
 struct AndNot
 {
+    static constexpr  bool isFromOnes = true;
+
     __m128i operator()(__m128i a, __m128i b) const
     {
         return _mm_andnot_si128(a, b);
@@ -576,6 +613,8 @@ void FillFromBitonalFromOnes_Bgr48_AVX(
 
 struct And
 {
+    static constexpr  bool isFromOnes = false;
+
     __m128i operator()(__m128i a, __m128i b) const
     {
         return _mm_and_si128(a, b);
@@ -651,6 +690,5 @@ void FillFromBitonalFromZeroes_Float32_AVX(
     And and;
     FillFromBitonalFromZeroesOrOnes_Float32_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
 }
-
 
 #endif

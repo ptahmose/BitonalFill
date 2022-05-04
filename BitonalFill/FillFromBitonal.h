@@ -250,5 +250,54 @@ void FillFromBitonalFromOnes_Float32_NEON(
     std::uint32_t sourceBitonalStride,
     float* destination,
     std::uint32_t destinationStride,
-    float valueForOnes);
+    float valueForZeroes);
+
+void FillFromBitonalFromZeroes_Gray8_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForZeroes);
+
+void FillFromBitonalFromZeroes_Gray16_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForZeroes);
+
+void FillFromBitonalFromZeroes_Bgr24_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint8_t* destination,
+    std::uint32_t destinationStride,
+    std::uint8_t valueForZeroesRed,
+    std::uint8_t valueForZeroesGreen,
+    std::uint8_t valueForZeroesBlue);
+
+void FillFromBitonalFromZeroes_Bgr48_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    std::uint16_t* destination,
+    std::uint32_t destinationStride,
+    std::uint16_t valueForZeroesRed,
+    std::uint16_t valueForZeroesGreen,
+    std::uint16_t valueForZeroesBlue);
+
+void FillFromBitonalFromZeroes_Float32_NEON(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* sourceBitonal,
+    std::uint32_t sourceBitonalStride,
+    float* destination,
+    std::uint32_t destinationStride,
+    float valueForZeroes);
 #endif

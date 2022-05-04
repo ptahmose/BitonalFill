@@ -390,7 +390,7 @@ static void TestFromBitonalOnes()
     }
 }
 
-static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
+static bool TestCaseFromOnes(PixelType pixeltype, uint32_t width, uint32_t height)
 {
     Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
     Bitmap dest_C = CreateBitmapWithRandomContent(pixeltype, width, height);
@@ -443,38 +443,123 @@ static bool TestCase(PixelType pixeltype, uint32_t width, uint32_t height)
     return Compare(dest_C, dest_Simd);
 }
 
-static void StressTest()
+static void StressTestFromOnes()
 {
-    bool b = TestCase(PixelType::Gray8, 113, 2007);
+    cout << "Test for 'from ones'" << endl;
+    cout << "====================" << endl;
+    bool b = TestCaseFromOnes(PixelType::Gray8, 113, 2007);
     cout << "Test 1 -> " << (b == true ? "ok" : "error") << endl;
-    b = TestCase(PixelType::Gray16, 113, 2007);
+    b = TestCaseFromOnes(PixelType::Gray16, 113, 2007);
     cout << "Test 2 -> " << (b == true ? "ok" : "error") << endl;
-    b = TestCase(PixelType::Bgr24, 113, 2007);
+    b = TestCaseFromOnes(PixelType::Bgr24, 113, 2007);
     cout << "Test 3 -> " << (b == true ? "ok" : "error") << endl;
-    b = TestCase(PixelType::Bgr48, 113, 2007);
+    b = TestCaseFromOnes(PixelType::Bgr48, 113, 2007);
     cout << "Test 4 -> " << (b == true ? "ok" : "error") << endl;
-    b = TestCase(PixelType::Float32, 113, 2007);
+    b = TestCaseFromOnes(PixelType::Float32, 113, 2007);
     cout << "Test 5 -> " << (b == true ? "ok" : "error") << endl;
 
     b = true;
     for (uint32_t w = 183; w < 200; ++w)
     {
-        b &= TestCase(PixelType::Gray8, w, 17);
-        b &= TestCase(PixelType::Gray16, w, 17);
-        b &= TestCase(PixelType::Bgr24, w, 17);
-        b &= TestCase(PixelType::Bgr48, w, 17);
-        b &= TestCase(PixelType::Float32, w, 17);
+        b &= TestCaseFromOnes(PixelType::Gray8, w, 17);
+        b &= TestCaseFromOnes(PixelType::Gray16, w, 17);
+        b &= TestCaseFromOnes(PixelType::Bgr24, w, 17);
+        b &= TestCaseFromOnes(PixelType::Bgr48, w, 17);
+        b &= TestCaseFromOnes(PixelType::Float32, w, 17);
     }
 
     cout << "Test 6 -> " << (b == true ? "ok" : "error") << endl;
 }
+
+static bool TestCaseFromZeroes(PixelType pixeltype, uint32_t width, uint32_t height)
+{
+    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
+    Bitmap dest_C = CreateBitmapWithRandomContent(pixeltype, width, height);
+    Bitmap dest_Simd = CreateBitmap(pixeltype, width, height);
+    CopyBitmap(dest_Simd, dest_C);
+    switch (pixeltype)
+    {
+    case PixelType::Gray8:
+        FillFromBitonalFromZeroes_Gray8_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromZeroes_Gray8_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromZeroes_Gray8_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48);
+#endif
+        break;
+    case PixelType::Gray16:
+        FillFromBitonalFromZeroes_Gray16_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4849);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromZeroes_Gray16_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromZeroes_Gray16_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4849);
+#endif
+        break;
+    case PixelType::Bgr24:
+        FillFromBitonalFromZeroes_Bgr24_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_C.data.get(), dest_C.stride, 0x48, 0x49, 0x4a);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromZeroes_Bgr24_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromZeroes_Bgr24_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint8_t*)dest_Simd.data.get(), dest_Simd.stride, 0x48, 0x49, 0x4a);
+#endif
+        break;
+    case PixelType::Bgr48:
+        FillFromBitonalFromZeroes_Bgr48_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_C.data.get(), dest_C.stride, 0x4858, 0x4959, 0x4a5a);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromZeroes_Bgr48_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromZeroes_Bgr48_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (uint16_t*)dest_Simd.data.get(), dest_Simd.stride, 0x4858, 0x4959, 0x4a5a);
+#endif
+        break;
+    case PixelType::Float32:
+        FillFromBitonalFromZeroes_Float32_C(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_C.data.get(), dest_C.stride, 42.4f);
+#if BITONALFILL_HASAVX
+        FillFromBitonalFromZeroes_Float32_AVX(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_Simd.data.get(), dest_Simd.stride, 42.4f);
+#elif BITONALFILL_HASNEON
+        FillFromBitonalFromZeroes_Float32_NEON(width, height, (const uint8_t*)bitonal.data.get(), bitonal.stride, (float*)dest_Simd.data.get(), dest_Simd.stride, 42.4f);
+#endif
+        break;
+    }
+
+    return Compare(dest_C, dest_Simd);
+}
+
+static void StressTestFromZeroes()
+{
+    cout << "Test for 'from zeroes'" << endl;
+    cout << "======================" << endl;
+    bool b = TestCaseFromZeroes(PixelType::Gray8, 113, 2007);
+    cout << "Test 1 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCaseFromZeroes(PixelType::Gray16, 113, 2007);
+    cout << "Test 2 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCaseFromZeroes(PixelType::Bgr24, 113, 2007);
+    cout << "Test 3 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCaseFromZeroes(PixelType::Bgr48, 113, 2007);
+    cout << "Test 4 -> " << (b == true ? "ok" : "error") << endl;
+    b = TestCaseFromZeroes(PixelType::Float32, 113, 2007);
+    cout << "Test 5 -> " << (b == true ? "ok" : "error") << endl;
+
+    b = true;
+    for (uint32_t w = 183; w < 200; ++w)
+    {
+        b &= TestCaseFromZeroes(PixelType::Gray8, w, 17);
+        b &= TestCaseFromZeroes(PixelType::Gray16, w, 17);
+        b &= TestCaseFromZeroes(PixelType::Bgr24, w, 17);
+        b &= TestCaseFromZeroes(PixelType::Bgr48, w, 17);
+        b &= TestCaseFromZeroes(PixelType::Float32, w, 17);
+    }
+
+    cout << "Test 6 -> " << (b == true ? "ok" : "error") << endl;
+}
+
 
 int main()
 {
     TestFromBitonalZeroes();
     TestFromBitonalOnes();
     cout << endl << endl;
-    StressTest();
+    StressTestFromOnes();
+    StressTestFromZeroes();
 
     /*
     uint8_t bitonalSrc[] = { 0x88,0x44 };
