@@ -556,9 +556,11 @@ static void StressTestFromZeroes()
 int main()
 {
     TestFromBitonalZeroes();
+    cout << endl;
     TestFromBitonalOnes();
     cout << endl << endl;
     StressTestFromOnes();
+    cout << endl;
     StressTestFromZeroes();
 
     /*
