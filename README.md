@@ -10,6 +10,8 @@ Here is an example for "FillFromBitonalFromOnes" with a "valueForOnes" of 0x23:
 
 ![example of operation](https://github.com/ptahmose/BitonalFill/blob/master/Readme/operation-example.png?raw=true)
 
+The repository contains implementations leveraging [AVX-instructions](https://en.wikipedia.org/wiki/Advanced_Vector_Extensions) (Intel/AMD) and [Neon](https://developer.arm.com/documentation/dht0002/a/Introducing-NEON/NEON-architecture-overview/NEON-instructions#:~:text=The%20NEON%20instructions%20provide%20data,manage%20all%20program%20flow%20control.) (ARM).
+
 ## license
 
 The code is licensed under the [unlicense](http://unlicense.org/) license. Please see the file license.txt in this repository.
