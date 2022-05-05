@@ -8,7 +8,7 @@ This is a finger exercise in SIMD-optimization. The operation implemented is:
 The bitonal bitmap here is organized as follows: the most significant bit corresponds to the leftmost pixel.
 Here is an example for "FillFromBitonalFromOnes" with a "valueForOnes" of 0x23:
 
-![example of operation](https://your-copied-image-address)
+![example of operation](https://github.com/ptahmose/BitonalFill/blob/master/Readme/operation-example.png?raw=true)
 
 ## license
 
