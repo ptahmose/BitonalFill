@@ -309,7 +309,7 @@ void FillFromBitonalFromZeroesOrOnes_Float32_AVX(
     }
 }
 
-struct AndNot
+struct AndNotOperation
 {
     static constexpr bool isFromOnes = true;
 
@@ -328,8 +328,8 @@ void FillFromBitonalFromOnes_Gray8_AVX(
     std::uint32_t destinationStride,
     std::uint8_t valueForOnes)
 {
-    const AndNot andNot;
-    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<AndNot>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
+    const AndNotOperation andNot;
+    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<AndNotOperation>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
 }
 
 void FillFromBitonalFromOnes_Gray16_AVX(
@@ -341,8 +341,8 @@ void FillFromBitonalFromOnes_Gray16_AVX(
     std::uint32_t destinationStride,
     std::uint16_t valueForOnes)
 {
-    const AndNot andNot;
-    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<AndNot>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
+    const AndNotOperation andNot;
+    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<AndNotOperation>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
 }
 
 void FillFromBitonalFromOnes_Float32_AVX(
@@ -354,8 +354,8 @@ void FillFromBitonalFromOnes_Float32_AVX(
     std::uint32_t destinationStride,
     float valueForOnes)
 {
-    const AndNot andNot;
-    FillFromBitonalFromZeroesOrOnes_Float32_AVX<AndNot>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
+    const AndNotOperation andNot;
+    FillFromBitonalFromZeroesOrOnes_Float32_AVX<AndNotOperation>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnes, andNot);
 }
 
 void FillFromBitonalFromOnes_Bgr24_AVX(
@@ -369,8 +369,8 @@ void FillFromBitonalFromOnes_Bgr24_AVX(
     std::uint8_t valueForOnesGreen,
     std::uint8_t valueForOnesBlue)
 {
-    const AndNot andNot;
-    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<AndNot>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnesRed, valueForOnesGreen, valueForOnesBlue, andNot);
+    const AndNotOperation andNot;
+    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<AndNotOperation>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnesRed, valueForOnesGreen, valueForOnesBlue, andNot);
 }
 
 void FillFromBitonalFromOnes_Bgr48_AVX(
@@ -384,11 +384,11 @@ void FillFromBitonalFromOnes_Bgr48_AVX(
     std::uint16_t valueForOnesGreen,
     std::uint16_t valueForOnesBlue)
 {
-    const AndNot andNot;
-    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<AndNot>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnesRed, valueForOnesGreen, valueForOnesBlue, andNot);
+    const AndNotOperation andNot;
+    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<AndNotOperation>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForOnesRed, valueForOnesGreen, valueForOnesBlue, andNot);
 }
 
-struct And
+struct AndOperator
 {
     static constexpr  bool isFromOnes = false;
 
@@ -407,8 +407,8 @@ void FillFromBitonalFromZeroes_Gray8_AVX(
     std::uint32_t destinationStride,
     std::uint8_t valueForZeroes)
 {
-    const And and;
-    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator and;
+    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
 }
 
 void FillFromBitonalFromZeroes_Gray16_AVX(
@@ -420,8 +420,8 @@ void FillFromBitonalFromZeroes_Gray16_AVX(
     std::uint32_t destinationStride,
     std::uint16_t valueForZeroes)
 {
-    const And and;
-    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator and;
+    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
 }
 
 void FillFromBitonalFromZeroes_Bgr24_AVX(
@@ -435,8 +435,8 @@ void FillFromBitonalFromZeroes_Bgr24_AVX(
     std::uint8_t valueForZeroesGreen,
     std::uint8_t valueForZeroesBlue)
 {
-    const And and;
-    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
+    const AndOperator and;
+    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
 }
 
 void FillFromBitonalFromZeroes_Bgr48_AVX(
@@ -450,8 +450,8 @@ void FillFromBitonalFromZeroes_Bgr48_AVX(
     std::uint16_t valueForZeroesGreen,
     std::uint16_t valueForZeroesBlue)
 {
-    const And and;
-    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
+    const AndOperator and;
+    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
 }
 
 void FillFromBitonalFromZeroes_Float32_AVX(
@@ -463,8 +463,8 @@ void FillFromBitonalFromZeroes_Float32_AVX(
     std::uint32_t destinationStride,
     float valueForZeroes)
 {
-    const And and;
-    FillFromBitonalFromZeroesOrOnes_Float32_AVX<And>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator and;
+    FillFromBitonalFromZeroesOrOnes_Float32_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
 }
 
 #endif
