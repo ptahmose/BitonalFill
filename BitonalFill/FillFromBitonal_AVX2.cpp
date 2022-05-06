@@ -407,8 +407,8 @@ void FillFromBitonalFromZeroes_Gray8_AVX(
     std::uint32_t destinationStride,
     std::uint8_t valueForZeroes)
 {
-    const AndOperator and;
-    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator andOp;
+    FillFromBitonalFromZeroesOrOnes_Gray8_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, andOp);
 }
 
 void FillFromBitonalFromZeroes_Gray16_AVX(
@@ -420,8 +420,8 @@ void FillFromBitonalFromZeroes_Gray16_AVX(
     std::uint32_t destinationStride,
     std::uint16_t valueForZeroes)
 {
-    const AndOperator and;
-    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator andOp;
+    FillFromBitonalFromZeroesOrOnes_Gray16_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, andOp);
 }
 
 void FillFromBitonalFromZeroes_Bgr24_AVX(
@@ -435,8 +435,8 @@ void FillFromBitonalFromZeroes_Bgr24_AVX(
     std::uint8_t valueForZeroesGreen,
     std::uint8_t valueForZeroesBlue)
 {
-    const AndOperator and;
-    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
+    const AndOperator andOp;
+    FillFromBitonalFromZeroesOrOnes_Bgr24_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, andOp);
 }
 
 void FillFromBitonalFromZeroes_Bgr48_AVX(
@@ -450,8 +450,8 @@ void FillFromBitonalFromZeroes_Bgr48_AVX(
     std::uint16_t valueForZeroesGreen,
     std::uint16_t valueForZeroesBlue)
 {
-    const AndOperator and;
-    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, and);
+    const AndOperator andOp;
+    FillFromBitonalFromZeroesOrOnes_Bgr48_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroesRed, valueForZeroesGreen, valueForZeroesBlue, andOp);
 }
 
 void FillFromBitonalFromZeroes_Float32_AVX(
@@ -463,8 +463,8 @@ void FillFromBitonalFromZeroes_Float32_AVX(
     std::uint32_t destinationStride,
     float valueForZeroes)
 {
-    const AndOperator and;
-    FillFromBitonalFromZeroesOrOnes_Float32_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, and);
+    const AndOperator andOp;
+    FillFromBitonalFromZeroesOrOnes_Float32_AVX<AndOperator>(width, height, sourceBitonal, sourceBitonalStride, destination, destinationStride, valueForZeroes, andOp);
 }
 
 #endif
