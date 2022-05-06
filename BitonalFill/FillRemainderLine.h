@@ -3,6 +3,14 @@
 #include <cstdint>
 #include <algorithm>
 
+/// This function is used for processing at most 16 bits (=2 bytes), and this operation is done with bytes-wise access.
+/// It is intended for processing a remainder (in a line)
+///
+/// \tparam T   Generic type parameter.
+/// \param          count       Number of pixels to process (must be less or equal to 16).
+/// \param          source      Bitonal bitmap.
+/// \param [in,out] destination The destination bitmap.
+/// \param          value       The value for "ones".
 template <typename T>
 void FillRemainderLineFromBitonalFromOnes(std::uint32_t count, const std::uint8_t* source, T* destination, T value)
 {
@@ -39,6 +47,14 @@ void FillRemainderLineFromBitonalFromOnes(std::uint32_t count, const std::uint8_
     }
 }
 
+/// This function is used for processing at most 16 bits (=2 bytes), and this operation is done with bytes-wise access.
+/// It is intended for processing a remainder (in a line)
+///
+/// \tparam T   Generic type parameter.
+/// \param          count       Number of pixels to process (must be less or equal to 16).
+/// \param          source      Bitonal bitmap.
+/// \param [in,out] destination The destination bitmap.
+/// \param          value       The value for "zeroes".
 template <typename T>
 void FillRemainderLineFromBitonalFromZeroes(std::uint32_t count, const std::uint8_t* source, T* destination, T value)
 {

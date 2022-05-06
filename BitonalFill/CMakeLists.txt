@@ -11,7 +11,7 @@ add_executable (BitonalFill
                 "BitonalFill.h" 
                 "FillFromBitonal.h" 
                 "FillFromBitonal.cpp" 
-                "FillFromBitonal_AVX2.cpp" 
+                "FillFromBitonal_AVX.cpp" 
                 "ColorPixelStructs.h" 
                 "FillFromBitonalFillTest.cpp" 
                 "FillFromBitonalFillTest.h" 
