@@ -14,7 +14,13 @@ add_executable (BitonalFill
                 "FillFromBitonal_AVX2.cpp" 
                 "ColorPixelStructs.h" 
                 "FillFromBitonalFillTest.cpp" 
-                "FillFromBitonalFillTest.h" "FillFromBitonal_NEON.cpp" "FillRemainderLine.h")
+                "FillFromBitonalFillTest.h" 
+                "FillFromBitonal_NEON.cpp" 
+                "FillRemainderLine.h")
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=mavx")
+endif()
 
 # check whether we can use AVX2-instructions -> we check for the presence of the file
 CHECK_INCLUDE_FILES(immintrin.h IMMINTRINFOUND)
