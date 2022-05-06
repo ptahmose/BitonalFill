@@ -70,6 +70,51 @@ Galaxy Book Go (Snapdragon 7c Gen2), arm64, VisualStudio2022
 | float32_C              | 1009.3              |
 | float32_Neon           | 6302.6              |
 
+AMD Ryzen 5 1600X (Linux), x64, gcc9.3
+
+| version                | performance in MB/s |
+| ---------------------- | ------------------- |
+| gray8_C                | 334.6               |
+| gray8_Neon             | 1271.8              |
+| gray16_C               | 678.2               |
+| gray16_Neon            | 2435.5              |
+| BGR24_C                | 986.3               |
+| BGR24_Neon             | 2818.2              |
+| BGR48_C                | 1974.8              |
+| BGR48_Neon             | 3026.3              |
+| float32_C              | 1358.1              |
+| float32_Neon           | 3026.3              |
+
+AMD Ryzen 7 4700U (Windows), x64, VisualStudio2022
+
+| version                | performance in MB/s |
+| ---------------------- | ------------------- |
+| gray8_C                | 284.7               |
+| gray8_Neon             | 2595.5              |
+| gray16_C               | 549.8               |
+| gray16_Neon            | 2745.7              |
+| BGR24_C                | 847.0               |
+| BGR24_Neon             | 2793.8              |
+| BGR48_C                | 1674.5              |
+| BGR48_Neon             | 2818.1              |
+| float32_C              | 1136.1              |
+| float32_Neon           | 2770.2              |
+
+ARM Cortex-A53, aarch64, gcc8.3
+
+| version                | performance in MB/s |
+| ---------------------- | ------------------- |
+| gray8_C                | 262.0               |
+| gray8_Neon             | 3198.5              |
+| gray16_C               | 522.0               |
+| gray16_Neon            | 3107.4              |
+| BGR24_C                | 743.0               |
+| BGR24_Neon             | 2671.3              |
+| BGR48_C                | 1485.6              |
+| BGR48_Neon             | 3088.7              |
+| float32_C              | 1044.1              |
+| float32_Neon           | 2892.6              |
+
 ## license
 
 The code is licensed under the [unlicense](http://unlicense.org/) license. Please see the file license.txt in this repository.
