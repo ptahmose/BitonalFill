@@ -19,7 +19,7 @@ add_executable (BitonalFill
                 "FillRemainderLine.h")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=mavx")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=mnative")
 endif()
 
 # check whether we can use AVX2-instructions -> we check for the presence of the file
