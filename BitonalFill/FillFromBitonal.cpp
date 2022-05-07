@@ -1,5 +1,7 @@
+#include <cstdint>
 #include "FillFromBitonal.h"
 #include "ColorPixelStructs.h"
+
 
 using namespace std;
 
