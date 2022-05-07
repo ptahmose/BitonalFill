@@ -100,7 +100,7 @@ AMD Ryzen 7 4700U (Windows), x64, VisualStudio2022
 | float32_C              | 1136.1              |
 | float32_Neon           | 2770.2              |
 
-ARM Cortex-A53, aarch64, gcc8.3
+MediaTek Helio P60 (MT6771V/C), aarch64, gcc8.3
 
 | version                | performance in MB/s |
 | ---------------------- | ------------------- |
