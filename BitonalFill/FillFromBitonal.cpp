@@ -2,7 +2,6 @@
 #include "FillFromBitonal.h"
 #include "ColorPixelStructs.h"
 
-
 using namespace std;
 
 template<typename T>
