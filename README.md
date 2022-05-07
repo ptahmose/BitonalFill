@@ -115,6 +115,21 @@ ARM Cortex-A53, aarch64, gcc8.3
 | float32_C              | 1044.1              |
 | float32_Neon           | 2892.6              |
 
+i7-8700K (Windows), x64, VisualStudio2022
+
+| version                | performance in MB/s |
+| ---------------------- | ------------------- |
+| gray8_C                | 306.0               |
+| gray8_Neon             | 4850.9              |
+| gray16_C               | 625.4               |
+| gray16_Neon            | 5022.7              |
+| BGR24_C                | 968.2               |
+| BGR24_Neon             | 5006.9              |
+| BGR48_C                | 1816.9              |
+| BGR48_Neon             | 4877.4              |
+| float32_C              | 1232.1              |
+| float32_Neon           | 4944.1              |
+
 ## license
 
 The code is licensed under the [unlicense](http://unlicense.org/) license. Please see the file license.txt in this repository.
