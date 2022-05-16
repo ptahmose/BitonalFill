@@ -8,6 +8,8 @@
 #include "FillFromBitonal.h"
 #include "FillFromBitonalFillTest.h"
 
+#include "HiLoBytePackUnpack.h"
+
 using namespace std;
 
 static void TestFromBitonalZeroes()
@@ -214,7 +216,7 @@ static void TestFromBitonalOnes()
 
     cout << "FillFromOnes:" << endl;
     cout << "=============" << endl;
-    
+
     Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, width, height);
 
     {
@@ -555,13 +557,35 @@ static void StressTestFromZeroes()
 
 int main()
 {
-    TestFromBitonalZeroes();
+    /*TestFromBitonalZeroes();
     cout << endl;
     TestFromBitonalOnes();
     cout << endl << endl;
     StressTestFromOnes();
     cout << endl;
-    StressTestFromZeroes();
+    StressTestFromZeroes();*/
+
+    static const uint16_t hilobyteunpackTest[8 * 2 + 1] =
+    {
+        0x1234,0x5678,0x9abc,0xdef0, 0x2345,0x6789,0xabcd,0xef01,
+        0x9294,0x9698,0x9a9c,0x9e90, 0x9395,0x9799,0x9b9d,0x9f91,
+        0x4352
+    };
+
+    uint8_t destC[(8 * 2 + 1) * 2];
+    uint8_t destSimd[(8 * 2 + 1) * 2];
+
+    LoHiByteUnpack_C(17, 1, 17 * 2, hilobyteunpackTest, destC);
+#if BITONALFILL_HASAVX
+    LoHiByteUnpack_AVX(17, 1, 17 * 2, hilobyteunpackTest, destSimd);
+#endif
+#if BITONALFILL_HASNEON
+    LoHiByteUnpack_NEON(17, 1, 17 * 2, hilobyteunpackTest, destSimd);
+#endif
+
+    int r = memcmp(destC, destSimd, (8 * 2 + 1) * 2);
+    cout << "Result: " << ((r == 0) ? "OK" : "ERROR") << endl;
+
 
     /*
     uint8_t bitonalSrc[] = { 0x88,0x44 };
