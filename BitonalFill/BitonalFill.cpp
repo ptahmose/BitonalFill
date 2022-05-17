@@ -554,17 +554,64 @@ static void StressTestFromZeroes()
     cout << "Test 6 -> " << (b == true ? "ok" : "error") << endl;
 }
 
+static void LoHiByteUnpackTest()
+{
+#if BITONALFILL_HASAVX
+    static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+    static const char* SimdName = "NEON";
+#endif
+
+    cout << "LoHiByteUnpack:" << endl;
+    cout << "===============" << endl;
+
+    const int REPEAT = 100;
+    Bitmap sourceBitmap = CreateBitmapWithRandomContent(PixelType::Gray16, 2051, 2048);
+    unique_ptr<void, decltype(&free)> destC = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2)  , free);
+    unique_ptr<void, decltype(&free)> destSimd = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2), free);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i=0;i<REPEAT;++i)
+    {
+        LoHiByteUnpack_C(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destC.get());
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double>  elapsed_seconds = end - start;
+    cout << "C -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < REPEAT; ++i)
+    {
+#if BITONALFILL_HASAVX
+        LoHiByteUnpack_AVX(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destSimd.get());
+#endif
+#if BITONALFILL_HASNEON
+        LoHiByteUnpack_NEON(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destSimd.get());
+#endif
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    elapsed_seconds = end - start;
+    cout << SimdName <<" -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+    int r = memcmp(destC.get(), destSimd.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2);
+    cout << "Result: " << ((r == 0) ? "OK" : "ERROR") << endl;
+}
 
 int main()
 {
-    /*TestFromBitonalZeroes();
+    TestFromBitonalZeroes();
     cout << endl;
     TestFromBitonalOnes();
-    cout << endl << endl;
+    cout << endl;
     StressTestFromOnes();
     cout << endl;
-    StressTestFromZeroes();*/
+    StressTestFromZeroes();
+    cout << endl;
+    LoHiByteUnpackTest();
 
+    /*
     static const uint16_t hilobyteunpackTest[8 * 2 + 1] =
     {
         0x1234,0x5678,0x9abc,0xdef0, 0x2345,0x6789,0xabcd,0xef01,
@@ -585,7 +632,7 @@ int main()
 
     int r = memcmp(destC, destSimd, (8 * 2 + 1) * 2);
     cout << "Result: " << ((r == 0) ? "OK" : "ERROR") << endl;
-
+    */
 
     /*
     uint8_t bitonalSrc[] = { 0x88,0x44 };

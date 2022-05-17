@@ -6,7 +6,6 @@
 
 using namespace std;
 
-
 void LoHiByteUnpack_AVX(std::uint32_t width, std::uint32_t height, std::uint32_t stride, const void* source, void* dest)
 {
     static const __m128i shuffleConst128 = _mm_set_epi8(

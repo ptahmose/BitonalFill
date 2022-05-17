@@ -74,7 +74,7 @@ Bitmap CreateBitmap(PixelType pixeltype, std::uint32_t width, std::uint32_t heig
         bitmap.stride = width;
         break;
     case PixelType::Gray16:
-        bitmap.stride = width * 2;
+        bitmap.stride = ((width * 2 + 3) / 4) * 4;
         break;
     case PixelType::Bgr24:
         bitmap.stride = width * 3;
@@ -105,7 +105,7 @@ static bool RandomGeneratorInitialized = false;
 
 Bitmap CreateBitmapWithRandomContent(PixelType pixeltype, std::uint32_t width, std::uint32_t height)
 {
-    if (RandomGeneratorInitialized==false)
+    if (RandomGeneratorInitialized == false)
     {
         RandomGenerator = std::mt19937(0x12345);
         /*std::random_device rd;
