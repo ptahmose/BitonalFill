@@ -18,7 +18,7 @@ void LoHiByteUnpack_NEON(std::uint32_t width, std::uint32_t height, std::uint32_
 
         for (uint32_t i = 0; i < widthOver8; ++i)
         {
-            const uint8x8x2_t data = vld2_u8(pSrc);
+            const uint8x8x2_t data = vld2_u8(reinterpret_cast<const uint8_t*>(pSrc));
             vst1_u8(pDst, data.val[0]);
             vst1_u8(pDst + halfLength, data.val[1]);
 
