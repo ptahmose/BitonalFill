@@ -5,6 +5,7 @@
 #include "config.h"
 
 #include <chrono>
+#include <cstring>
 #include "FillFromBitonal.h"
 #include "FillFromBitonalFillTest.h"
 
