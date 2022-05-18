@@ -13,17 +13,17 @@
 
 using namespace std;
 
+#if BITONALFILL_HASAVX
+static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+static const char* SimdName = "NEON";
+#endif
+
 static void TestFromBitonalZeroes()
 {
     const uint32_t REPEAT = 100;
     const uint32_t width = 2048;
     const uint32_t height = 2048;
-
-#if BITONALFILL_HASAVX
-    static const char* SimdName = "AVX";
-#elif BITONALFILL_HASNEON
-    static const char* SimdName = "NEON";
-#endif
 
     cout << "FillFromZeroes:" << endl;
     cout << "===============" << endl;
@@ -208,12 +208,6 @@ static void TestFromBitonalOnes()
     const uint32_t REPEAT = 100;
     const uint32_t width = 2048;
     const uint32_t height = 2048;
-
-#if BITONALFILL_HASAVX
-    static const char* SimdName = "AVX";
-#elif BITONALFILL_HASNEON
-    static const char* SimdName = "NEON";
-#endif
 
     cout << "FillFromOnes:" << endl;
     cout << "=============" << endl;
@@ -557,22 +551,16 @@ static void StressTestFromZeroes()
 
 static void LoHiByteUnpackTest()
 {
-#if BITONALFILL_HASAVX
-    static const char* SimdName = "AVX";
-#elif BITONALFILL_HASNEON
-    static const char* SimdName = "NEON";
-#endif
-
     cout << "LoHiByteUnpack:" << endl;
     cout << "===============" << endl;
 
     const int REPEAT = 100;
     Bitmap sourceBitmap = CreateBitmapWithRandomContent(PixelType::Gray16, 2051, 2048);
-    unique_ptr<void, decltype(&free)> destC = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2)  , free);
+    unique_ptr<void, decltype(&free)> destC = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2), free);
     unique_ptr<void, decltype(&free)> destSimd = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2), free);
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (int i=0;i<REPEAT;++i)
+    for (int i = 0; i < REPEAT; ++i)
     {
         LoHiByteUnpack_C(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destC.get());
     }
@@ -594,14 +582,40 @@ static void LoHiByteUnpackTest()
 
     end = std::chrono::high_resolution_clock::now();
     elapsed_seconds = end - start;
-    cout << SimdName <<" -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+    cout << SimdName << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
     int r = memcmp(destC.get(), destSimd.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2);
     cout << "Result: " << ((r == 0) ? "OK" : "ERROR") << endl;
 }
 
+void TestLoHiBytePack()
+{
+    Bitmap sourceBitmap = CreateBitmapWithRandomContent(PixelType::Gray16, 2051, 2048);
+    unique_ptr<void, decltype(&free)> destC = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2), free);
+    LoHiByteUnpack_C(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destC.get());
+
+    Bitmap restoredBitmapC = CreateBitmap(PixelType::Gray16, sourceBitmap.width, sourceBitmap.height);
+    LoHiBytePack_C(destC.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmapC.width, restoredBitmapC.height, restoredBitmapC.stride, restoredBitmapC.data.get());
+    Bitmap restoredBitmapSimd = CreateBitmap(PixelType::Gray16, sourceBitmap.width, sourceBitmap.height);
+#if BITONALFILL_HASAVX
+    LoHiBytePack_AVX(destC.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmapSimd.width, restoredBitmapSimd.height, restoredBitmapSimd.stride, restoredBitmapSimd.data.get());
+#endif
+#if BITONALFILL_HASNEON
+    LoHiBytePack_NEON(destC.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmapSimd.width, restoredBitmapSimd.height, restoredBitmapSimd.stride, restoredBitmapSimd.data.get());
+#endif
+
+    bool b = Compare(restoredBitmapC, sourceBitmap);
+    cout << "Result (LoHiBytePack-C   ): " << ((b) ? "OK" : "ERROR") << endl;
+
+    b = Compare(restoredBitmapSimd, sourceBitmap);
+    cout << "Result (LoHiBytePack-" << SimdName << "): " << ((b) ? "OK" : "ERROR") << endl;
+}
+
 int main()
 {
+    TestLoHiBytePack();
+
+
     TestFromBitonalZeroes();
     cout << endl;
     TestFromBitonalOnes();

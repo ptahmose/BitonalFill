@@ -42,4 +42,39 @@ void LoHiByteUnpack_AVX(std::uint32_t width, std::uint32_t height, std::uint32_t
         }
     }
 }
+
+void LoHiBytePack_AVX(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, std::uint32_t height, std::uint32_t stride, void* dest)
+{
+    const uint8_t* pSrc = static_cast<const uint8_t*>(ptrSrc);
+
+    const size_t halfLength = sizeSrc / 2;
+    //const size_t halfLengthOver16 = halfLength / 16;
+
+    const uint32_t widthOver16 = width / 16;
+    const uint32_t widthRemainder = width % 16;
+
+    for (uint32_t y = 0; y < height; ++y)
+    {
+        __m256i* pDst = reinterpret_cast<__m256i*>(static_cast<uint8_t*>(dest) + static_cast<size_t>(y) * stride);
+
+        for (uint32_t x = 0; x < widthOver16; ++x)
+        {
+            const __m256i a = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(pSrc))), 0x50);
+            const __m256i b = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(pSrc + halfLength))), 0x50);
+            const __m256i packed = _mm256_unpacklo_epi8(a, b);
+            _mm256_storeu_si256(pDst++, packed);
+            pSrc += 16;
+        }
+
+        uint16_t* pDstWord = reinterpret_cast<uint16_t*>(pDst);
+        for (uint32_t x = 0; x < widthRemainder; ++x)
+        {
+            const uint16_t v = *pSrc | (static_cast<uint16_t>(*(pSrc + halfLength)) << 8);
+            *pDstWord++ = v;
+            ++pSrc;
+        }
+    }
+
+    _mm256_zeroall();
+}
 #endif
