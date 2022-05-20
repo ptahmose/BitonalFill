@@ -6,8 +6,13 @@
 
 using namespace std;
 
+extern void CheckLoHiByteUnpackArgumentsAndThrow(std::uint32_t width, std::uint32_t stride, const void* source, void* dest);
+extern void CheckLoHiBytePackArgumentsAndThrow(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, std::uint32_t height, std::uint32_t stride, void* dest);
+
 void LoHiByteUnpack_NEON(std::uint32_t width, std::uint32_t height, std::uint32_t stride, const void* source, void* dest)
 {
+    CheckLoHiByteUnpackArgumentsAndThrow(width, stride, source, dest);
+
     uint8_t* pDst = static_cast<uint8_t*>(dest);
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthModulo8 = width % 8;
@@ -38,18 +43,17 @@ void LoHiByteUnpack_NEON(std::uint32_t width, std::uint32_t height, std::uint32_
 
 void LoHiBytePack_NEON(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, std::uint32_t height, std::uint32_t stride, void* dest)
 {
+    CheckLoHiBytePackArgumentsAndThrow(ptrSrc, sizeSrc, width, height, stride, dest);
+
     const uint8_t* pSrc = static_cast<const uint8_t*>(ptrSrc);
 
     const size_t halfLength = sizeSrc / 2;
-
     const uint32_t widthOver8 = width / 8;
     const uint32_t widthRemainder = width % 8;
 
     for (uint32_t y = 0; y < height; ++y)
     {
-        //__m256i* pDst = reinterpret_cast<__m256i*>(static_cast<uint8_t*>(dest) + static_cast<size_t>(y) * stride);
         uint8_t* pDst = static_cast<uint8_t*>(dest) + static_cast<size_t>(y) * stride;
-
         for (uint32_t x = 0; x < widthOver8; ++x)
         {
             const uint8x8_t a = vld1_u8(pSrc);

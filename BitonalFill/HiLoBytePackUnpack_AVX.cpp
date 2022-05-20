@@ -6,8 +6,13 @@
 
 using namespace std;
 
+extern void CheckLoHiByteUnpackArgumentsAndThrow(std::uint32_t width, std::uint32_t stride, const void* source, void* dest);
+extern void CheckLoHiBytePackArgumentsAndThrow(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, std::uint32_t height, std::uint32_t stride, void* dest);
+
 void LoHiByteUnpack_AVX(std::uint32_t width, std::uint32_t height, std::uint32_t stride, const void* source, void* dest)
 {
+    CheckLoHiByteUnpackArgumentsAndThrow(width, stride, source, dest);
+
     static const __m128i shuffleConst128 = _mm_set_epi8(
         0xf, 0xd, 0xb, 0x9,
         0x7, 0x5, 0x3, 0x1,
@@ -19,6 +24,7 @@ void LoHiByteUnpack_AVX(std::uint32_t width, std::uint32_t height, std::uint32_t
     const uint32_t widthOver16 = width / 16;
     const uint32_t widthModulo16 = width % 16;
     const __m256i shuffleConst = _mm256_broadcastsi128_si256(shuffleConst128);
+
     for (uint32_t y = 0; y < height; ++y)
     {
         const uint16_t* pSrc = reinterpret_cast<const uint16_t*>(static_cast<const uint8_t*>(source) + y * static_cast<size_t>(stride));
@@ -41,15 +47,17 @@ void LoHiByteUnpack_AVX(std::uint32_t width, std::uint32_t height, std::uint32_t
             pDst++;
         }
     }
+
+    _mm256_zeroall();
 }
 
 void LoHiBytePack_AVX(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, std::uint32_t height, std::uint32_t stride, void* dest)
 {
+    CheckLoHiBytePackArgumentsAndThrow(ptrSrc, sizeSrc, width, height, stride, dest);
+
     const uint8_t* pSrc = static_cast<const uint8_t*>(ptrSrc);
 
     const size_t halfLength = sizeSrc / 2;
-    //const size_t halfLengthOver16 = halfLength / 16;
-
     const uint32_t widthOver16 = width / 16;
     const uint32_t widthRemainder = width % 16;
 
