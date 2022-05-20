@@ -588,6 +588,46 @@ static void LoHiByteUnpackTest()
     cout << "Result: " << ((r == 0) ? "OK" : "ERROR") << endl;
 }
 
+static void LoHiBytePackTest()
+{
+    cout << "LoHiBytePack:" << endl;
+    cout << "=============" << endl;
+
+    const int REPEAT = 100;
+    Bitmap sourceBitmap = CreateBitmapWithRandomContent(PixelType::Gray16, 2051, 2048);
+    unique_ptr<void, decltype(&free)> destUnpacked = unique_ptr<void, decltype(&free)>(malloc((size_t)sourceBitmap.width * sourceBitmap.height * 2), free);
+    LoHiByteUnpack_C(sourceBitmap.width, sourceBitmap.height, sourceBitmap.stride, sourceBitmap.data.get(), destUnpacked.get());
+
+    Bitmap restoredBitmap = CreateBitmap(PixelType::Gray16, sourceBitmap.width, sourceBitmap.height);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < REPEAT; ++i)
+    {
+        LoHiBytePack_C(destUnpacked.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmap.width, restoredBitmap.height, restoredBitmap.stride, restoredBitmap.data.get());
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double>  elapsed_seconds = end - start;
+    bool b = Compare(restoredBitmap, sourceBitmap);
+    cout << "C -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s : " << ((b) ? "OK" : "ERROR") << endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    for (int i = 0; i < REPEAT; ++i)
+    {
+#if BITONALFILL_HASAVX
+        LoHiBytePack_AVX(destUnpacked.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmap.width, restoredBitmap.height, restoredBitmap.stride, restoredBitmap.data.get());
+#endif
+#if BITONALFILL_HASNEON
+        LoHiBytePack_NEON(destUnpacked.get(), (size_t)sourceBitmap.width * sourceBitmap.height * 2, restoredBitmap.width, restoredBitmap.height, restoredBitmap.stride, restoredBitmap.data.get());
+#endif
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    elapsed_seconds = end - start;
+    b = Compare(restoredBitmap, sourceBitmap);
+    cout << SimdName << " -> " << elapsed_seconds.count() << "s, " << (REPEAT * sourceBitmap.GetTotalSize() / elapsed_seconds.count()) / 1e6 << "MB/s : " << ((b) ? "OK" : "ERROR") << endl;
+}
+/*
 void TestLoHiBytePack()
 {
     Bitmap sourceBitmap = CreateBitmapWithRandomContent(PixelType::Gray16, 2051, 2048);
@@ -610,12 +650,11 @@ void TestLoHiBytePack()
     b = Compare(restoredBitmapSimd, sourceBitmap);
     cout << "Result (LoHiBytePack-" << SimdName << "): " << ((b) ? "OK" : "ERROR") << endl;
 }
+*/
 
 int main()
 {
-    TestLoHiBytePack();
-
-
+    //TestLoHiBytePack();
     TestFromBitonalZeroes();
     cout << endl;
     TestFromBitonalOnes();
@@ -625,6 +664,8 @@ int main()
     StressTestFromZeroes();
     cout << endl;
     LoHiByteUnpackTest();
+    cout << endl;
+    LoHiBytePackTest();
 
     /*
     static const uint16_t hilobyteunpackTest[8 * 2 + 1] =

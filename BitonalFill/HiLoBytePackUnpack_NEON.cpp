@@ -54,20 +54,10 @@ void LoHiBytePack_NEON(const void* ptrSrc, size_t sizeSrc, std::uint32_t width, 
         {
             const uint8x8_t a = vld1_u8(pSrc);
             const uint8x8_t b = vld1_u8(pSrc + halfLength);
-            //const uint8x16_t cc = vcombine_u8(a, b);
-            //vst2_u8(pDst, cc);
-
-            uint8x8x2_t c;
-            c.val[0] = a;
-            c.val[1] = b;
+            uint8x8x2_t c{a,b};
             vst2_u8(pDst, c);
             pSrc += 8;
             pDst += 16;
-            //const __m256i a = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(pSrc))), 0x50);
-            //const __m256i b = _mm256_permute4x64_epi64(_mm256_castsi128_si256(_mm_lddqu_si128(reinterpret_cast<const __m128i*>(pSrc + halfLength))), 0x50);
-            //const __m256i packed = _mm256_unpacklo_epi8(a, b);
-            //_mm256_storeu_si256(pDst++, packed);
-            //pSrc += 16;
         }
 
         uint16_t* pDstWord = reinterpret_cast<uint16_t*>(pDst);
