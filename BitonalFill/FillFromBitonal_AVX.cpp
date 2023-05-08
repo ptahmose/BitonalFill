@@ -11,8 +11,8 @@
 
 using namespace std;
 
-static const __m128i bitSelectMask = _mm_set_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80), 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80));
-static const __m128i shuffleConstForRepeatBytes8Times = _mm_set_epi8(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
+static const __m128i kBitSelectMask = _mm_set_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80), 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80));
+static const __m128i kShuffleConstForRepeatBytes8Times = _mm_set_epi8(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 
 template<typename T>
 void FillFromBitonalFromZeroesOrOnes_Gray8_AVX(
@@ -39,11 +39,11 @@ void FillFromBitonalFromZeroesOrOnes_Gray8_AVX(
         {
             // load two bytes from the bitonal source, and repeat each byte 8 times
             // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), kShuffleConstForRepeatBytes8Times);
 
             // now we and it with the mask, which selects one bit in each byte, so we have
             // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _op_(bitonal, bitSelectMask);
+            const __m128i andWithMask = _op_(bitonal, kBitSelectMask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
             _mm_maskmoveu_si128(value, maskForStore, reinterpret_cast<char*>(ptrDst));
 
@@ -87,11 +87,11 @@ void FillFromBitonalFromZeroesOrOnes_Gray16_AVX(
         {
             // load two bytes from the bitonal source, and repeat each byte 8 times
             // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), kShuffleConstForRepeatBytes8Times);
 
             // now we and it with the mask, which selects one bit in each byte, so we have
             // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _op_(bitonal, bitSelectMask);
+            const __m128i andWithMask = _op_(bitonal, kBitSelectMask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
 
             // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
@@ -154,11 +154,11 @@ void FillFromBitonalFromZeroesOrOnes_Bgr24_AVX(
         {
             // load two bytes from the bitonal source, and repeat each byte 8 times
             // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), kShuffleConstForRepeatBytes8Times);
 
             // now we and it with the mask, which selects one bit in each byte, so we have
             // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _op_(bitonal, bitSelectMask);
+            const __m128i andWithMask = _op_(bitonal, kBitSelectMask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
 
             const __m128i maskForStore1 = _mm_shuffle_epi8(maskForStore, shuffleConstMask1);
@@ -221,11 +221,11 @@ void FillFromBitonalFromZeroesOrOnes_Bgr48_AVX(
         {
             // load two bytes from the bitonal source, and repeat each byte 8 times
             // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), kShuffleConstForRepeatBytes8Times);
 
             // now we and it with the mask, which selects one bit in each byte, so we have
             // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _op_(bitonal, bitSelectMask);
+            const __m128i andWithMask = _op_(bitonal, kBitSelectMask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
 
             const __m128i maskForStore1 = _mm_shuffle_epi8(maskForStore, shuffleConstMask1);
@@ -278,11 +278,11 @@ void FillFromBitonalFromZeroesOrOnes_Float32_AVX(
         {
             // load two bytes from the bitonal source, and repeat each byte 8 times
             // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), shuffleConstForRepeatBytes8Times);
+            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*ptrSrc)), kShuffleConstForRepeatBytes8Times);
 
             // now we and it with the mask, which selects one bit in each byte, so we have
             // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _op_(bitonal, bitSelectMask);
+            const __m128i andWithMask = _op_(bitonal, kBitSelectMask);
             const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
 
             // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
