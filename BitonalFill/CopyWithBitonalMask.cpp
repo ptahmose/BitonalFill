@@ -1,6 +1,8 @@
-#include <cstdlib>
 #include "CopyWithBitonalMask.h"
 #include "ColorPixelStructs.h"
+#include <cstdlib>
+#include <algorithm>
+
 
 using namespace std;
 
@@ -113,7 +115,7 @@ struct CopyRoiWithBitonalMaskData
 template <typename T>
 void CopyWithBitonalMask_Roi_Gray8_C(const CopyRoiWithBitonalMaskData<T>& info)
 {
-    const uint32_t start_shift = info.roi_x % 8;
+    const uint32_t start_shift = min(info.roi_x % 8, info.roi_width);
     const uint32_t width_over_eight = (info.roi_width - start_shift) / 8;
     const uint32_t width_remainder = (info.roi_width - start_shift) % 8;
 
