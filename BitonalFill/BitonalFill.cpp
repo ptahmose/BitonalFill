@@ -731,14 +731,14 @@ static void Benchmark_CopyWithBitonalMask_Gray16()
     for (uint32_t i = 0; i < kIterations; ++i)
     {
         CopyWithBitonalMask_Gray16_C(
-               kWidth,
-               kHeight,
-               (const uint8_t*)bitonal.data.get(),
-               bitonal.stride,
-               (const uint16_t*)source_gray16.data.get(),
-               source_gray16.stride,
-               (uint16_t*)destination_gray16_C.data.get(),
-               destination_gray16_C.stride);
+            kWidth,
+            kHeight,
+            (const uint8_t*)bitonal.data.get(),
+            bitonal.stride,
+            (const uint16_t*)source_gray16.data.get(),
+            source_gray16.stride,
+            (uint16_t*)destination_gray16_C.data.get(),
+            destination_gray16_C.stride);
     }
 
     auto end = std::chrono::high_resolution_clock::now();
@@ -827,9 +827,75 @@ static void TestCopyRoiWithBitonalMask_Gray8()
     //}
 }
 
+static void TestCopyRoiWithBitonalMask1()
+{
+    uint8_t bitonal[2] = { 0b0000'0001, 0b1010'0000 };
+
+    uint8_t source[12] = { 1,2,3,4,5,6,7,8,9,10,11,12 };
+    uint8_t destination[4] = { 0 };
+
+    //CopyWithBitonalMask_Roi_Gray8_AVX(
+    CopyWithBitonalMask_Roi_Gray8_C(
+        12,
+        1,
+        bitonal,
+        2,
+        source,
+        12,
+        7,
+        0,
+        4,
+        1,
+        destination,
+        4);
+
+    bool is_correct = (destination[0] == 8) && (destination[1] == 9) && (destination[2] == 0) && (destination[3] == 11);
+    if (!is_correct)
+    {
+        cout << "Test for CopyWithBitonalMask_Roi_Gray8_AVX failed" << endl;
+    }
+}
+
+static void TestCopyRoiWithBitonalMask2()
+{
+    uint8_t bitonal[4] = { 0b0000'0001, 0b1010'1010, 0b0101'1010, 0b1000'0000 };
+
+    uint8_t source[25] = { 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25 };
+    uint8_t destination[18] = { 0 };
+
+    CopyWithBitonalMask_Roi_Gray8_AVX(
+        25,
+        1,
+        bitonal,
+        4,
+        source,
+        25,
+        7,
+        0,
+        18,
+        1,
+        destination,
+        18);
+
+    bool is_correct = (destination[0] == 8) && (destination[1] == 9) && (destination[2] == 0) && (destination[3] == 11) &&
+        (destination[4] == 0) && (destination[5] == 13) && (destination[6] == 0) && (destination[7] == 15) &&
+        (destination[8] == 0) && (destination[9] == 0) && (destination[10] == 18) && (destination[11] == 0) &&
+        (destination[12] == 20) && (destination[13] == 21) && (destination[14] == 0) && (destination[15] == 23) &&
+        (destination[16] == 0) && (destination[17] == 25);
+    if (!is_correct)
+    {
+        cout << "Test for CopyWithBitonalMask_Roi_Gray8_AVX failed" << endl;
+    }
+}
+
+
 
 int main()
 {
+    TestCopyRoiWithBitonalMask1();
+    TestCopyRoiWithBitonalMask2();
+
+
     TestCopyRoiWithBitonalMask_Gray8();
 
     Benchmark_CopyWithBitonalMask_Gray8();
@@ -844,6 +910,6 @@ int main()
     StressTestFromOnes();
     cout << endl;
     StressTestFromZeroes();*/
-    
+
     return 0;
 }

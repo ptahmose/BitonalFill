@@ -163,13 +163,13 @@ void CopyWithBitonalMask_Roi_Gray8_AVX(
     {
         const uint16_t* bitonal_line = reinterpret_cast<const uint16_t*>(source_bitonal + static_cast<size_t>(y) * source_bitonal_stride + roi_x / 8);
         const uint8_t* source_line = source + static_cast<size_t>(y) * source_stride + roi_x;
-        uint8_t* destination_line = destination + static_cast<size_t>(y) * destination_stride + roi_x;
+        uint8_t* destination_line = destination + static_cast<size_t>(y) * destination_stride;
 
         // First, we do the bits until we are byte aligned.
-        if (remaining_bits_count > 0)
+        if (bits_to_byte_alignment > 0)
         {
             const uint8_t bitonal_byte = *reinterpret_cast<const uint8_t*>(bitonal_line);
-            for (uint32_t i = 8 - bits_to_byte_alignment; i <= remaining_bits_count; ++i)
+            for (uint32_t i = 8 - bits_to_byte_alignment; i < 8; ++i)
             {
                 const uint8_t bit = 0x80 >> i;
                 if (bitonal_byte & bit)
