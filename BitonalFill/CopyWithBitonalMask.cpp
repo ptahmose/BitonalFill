@@ -113,11 +113,17 @@ struct CopyRoiWithBitonalMaskData
 };
 
 template <typename T>
-void CopyWithBitonalMask_Roi_Gray8_C(const CopyRoiWithBitonalMaskData<T>& info)
+void CopyWithBitonalMask_Roi_C(const CopyRoiWithBitonalMaskData<T>& info)
 {
-    const uint32_t start_shift = min(info.roi_x % 8, info.roi_width);
-    const uint32_t width_over_eight = (info.roi_width - start_shift) / 8;
-    const uint32_t width_remainder = (info.roi_width - start_shift) % 8;
+
+    // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
+    // Important - this must not be larger than the roi_width.
+    const uint32_t bits_to_byte_alignment = std::min(((info.roi_x + 7) / 8) * 8 - info.roi_x, info.roi_width);
+
+    // now, we only have to consider the remaining bits, i.e. the number of bits calculated above needs to be subtracted from the roi_width.
+    const uint32_t remaining_bits_count = info.roi_width - bits_to_byte_alignment;   // note: this cannot be negative
+    const uint32_t width_over_eight = remaining_bits_count / 8;
+    const uint32_t width_remainder = remaining_bits_count % 8;
 
     const uint8_t* source_pointer = reinterpret_cast<const uint8_t*>(info.source_data) + static_cast<size_t>(info.roi_y) * info.source_stride + static_cast<size_t>(info.roi_x) * sizeof(T);
     const uint8_t* bitonal_pointer = reinterpret_cast<const uint8_t*>(info.bitonal_data) + static_cast<size_t>(info.roi_y) * info.bitonal_stride + info.roi_x / 8;
@@ -128,19 +134,20 @@ void CopyWithBitonalMask_Roi_Gray8_C(const CopyRoiWithBitonalMaskData<T>& info)
         T* destination = reinterpret_cast<T*>(reinterpret_cast<uint8_t*>(info.destination_data) + static_cast<size_t>(y) * info.destination_stride);
         const uint8_t* bitonal = bitonal_pointer + static_cast<size_t>(y) * info.bitonal_stride;
 
-        if (start_shift > 0)
+        // First, we do the bits until we are byte aligned.
+        if (bits_to_byte_alignment > 0)
         {
-            // we do the first few pixels manually, until we are aligned to 8 pixels (or: the whole mask byte is used)
-            for (uint32_t i = start_shift; i < 8; ++i)
+            const uint8_t bitonal_byte = *bitonal;
+            for (uint32_t i = 8 - bits_to_byte_alignment; i < 8; ++i)
             {
-                const uint8_t v = *bitonal;
-                if (v & (0x80 >> i))
+                const uint8_t bit = 0x80 >> i;
+                if (bitonal_byte & bit)
                 {
                     *destination = *source;
                 }
 
-                ++destination;
                 ++source;
+                ++destination;
             }
 
             ++bitonal;
@@ -197,5 +204,23 @@ void CopyWithBitonalMask_Roi_Gray8_C(
     std::uint32_t destination_stride)
 {
     const CopyRoiWithBitonalMaskData<uint8_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, roi_x, roi_y, roi_width, roi_height, destination, destination_stride };
-    CopyWithBitonalMask_Roi_Gray8_C<uint8_t>(info);
+    CopyWithBitonalMask_Roi_C<uint8_t>(info);
+}
+
+void CopyWithBitonalMask_Roi_Gray16_C(
+    std::uint32_t width,
+    std::uint32_t height,
+    const std::uint8_t* source_bitonal,
+    std::uint32_t source_bitonal_stride,
+    const std::uint16_t* source,
+    std::uint32_t source_stride,
+    std::uint32_t roi_x,
+    std::uint32_t roi_y,
+    std::uint32_t roi_width,
+    std::uint32_t roi_height,
+    std::uint16_t* destination,
+    std::uint32_t destination_stride)
+{
+    const CopyRoiWithBitonalMaskData<uint16_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, roi_x, roi_y, roi_width, roi_height, destination, destination_stride };
+    CopyWithBitonalMask_Roi_C<uint16_t>(info);
 }
