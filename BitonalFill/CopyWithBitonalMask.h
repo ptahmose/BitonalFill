@@ -115,4 +115,18 @@ void CopyWithBitonalMask_Roi_Gray8_AVX(
     std::uint32_t roi_height,
     std::uint8_t* destination, 
     std::uint32_t destination_stride);
+
+void CopyWithBitonalMask_Roi_Gray16_AVX(
+    std::uint32_t width, 
+    std::uint32_t height, 
+    const std::uint8_t* source_bitonal,
+    std::uint32_t source_bitonal_stride,
+    const std::uint16_t* source,
+    std::uint32_t source_stride,
+    std::uint32_t roi_x,
+    std::uint32_t roi_y,
+    std::uint32_t roi_width,
+    std::uint32_t roi_height,
+    std::uint16_t* destination, 
+    std::uint32_t destination_stride);
 #endif
