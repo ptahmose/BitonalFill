@@ -169,13 +169,13 @@ int CopyWithBitonalMask_Roi_Gray16_C(
         return error_code;
     }
 
-    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 1);
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 2);
     if (error_code != ReturnCode_Success)
     {
         return error_code;
     }
 
-    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 1);
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 2);
     if (error_code != ReturnCode_Success)
     {
         return error_code;
