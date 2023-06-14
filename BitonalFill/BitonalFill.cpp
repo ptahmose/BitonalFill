@@ -783,6 +783,78 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
     }
 }
 
+static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
+{
+    const uint32_t kWidth = 2048;
+    const uint32_t kHeight = 2048;
+    const uint32_t kIterations = 100;
+
+    cout << "Benchmark for CopyWithBitonalMask_Roi_Gray16: " << kWidth << "x" << kHeight << ", " << kIterations << " repeats" << endl;
+
+    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, kWidth, kHeight);
+    Bitmap source_gray16 = CreateBitmapWithRandomContent(PixelType::Gray16, kWidth, kHeight);
+    Bitmap destination_gray16_C = CreateBitmap(PixelType::Gray16, kWidth - 2, kHeight);
+    Bitmap destination_gray16_AVX = CreateBitmap(PixelType::Gray16, kWidth - 2, kHeight);
+
+    memset(destination_gray16_C.data.get(), 0x42, (size_t)destination_gray16_C.stride * destination_gray16_C.height);
+    memset(destination_gray16_AVX.data.get(), 0x42, (size_t)destination_gray16_AVX.stride * destination_gray16_AVX.height);
+
+    auto start = std::chrono::high_resolution_clock::now();
+    for (uint32_t i = 0; i < kIterations; ++i)
+    {
+        CopyWithBitonalMask_Roi_Gray16_C(
+            kWidth,
+            kHeight,
+            (const uint8_t*)bitonal.data.get(),
+            bitonal.stride,
+            (const uint16_t*)source_gray16.data.get(),
+            source_gray16.stride,
+            1,
+            0,
+            destination_gray16_C.width,
+            destination_gray16_C.height,
+            (uint16_t*)destination_gray16_C.data.get(),
+            destination_gray16_C.stride);
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed_seconds = end - start;
+    size_t dataSize = static_cast<size_t>(destination_gray16_C.stride) * destination_gray16_C.height;
+    cout << "  Gray16 (C)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+    start = std::chrono::high_resolution_clock::now();
+    for (uint32_t i = 0; i < kIterations; ++i)
+    {
+        CopyWithBitonalMask_Roi_Gray16_AVX(
+            kWidth,
+            kHeight,
+            (const uint8_t*)bitonal.data.get(),
+            bitonal.stride,
+            (const uint16_t*)source_gray16.data.get(),
+            source_gray16.stride,
+            1,
+            0,
+            destination_gray16_AVX.width,
+            destination_gray16_AVX.height,
+            (uint16_t*)destination_gray16_AVX.data.get(),
+            destination_gray16_AVX.stride);
+    }
+
+    end = std::chrono::high_resolution_clock::now();
+    elapsed_seconds = end - start;
+    dataSize = static_cast<size_t>(destination_gray16_C.stride) * destination_gray16_C.height;
+    cout << "  Gray16 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+
+    if (Compare(destination_gray16_C, destination_gray16_AVX))
+    {
+        cout << "  Results compare ok" << endl;
+    }
+    else
+    {
+        cout << "  ERROR - results differ" << endl;
+    }
+}
+
 static void Benchmark_CopyWithBitonalMask_Gray16()
 {
     const uint32_t kWidth = 2048;
@@ -1127,6 +1199,7 @@ int main()
     TestCopyWithBitonalMask_Gray16();*/
 
     Benchmark_CopyWithBitonalMask_Roi_Gray8();
+    Benchmark_CopyWithBitonalMask_Roi_Gray16();
 
     TestFromBitonalZeroes();
     cout << endl;
