@@ -1,6 +1,11 @@
 #include "config.h"
+#include "CopyWithBitonalMaskUtilities.h"
 
-#if BITONALFILL_HASAVX 
+#if BITONALFILL_HASAVX
+
+#ifndef __AVX__ 
+    #error "AVX instructions are not enabled - please add the option /arch:AVX when compiling this file"
+#endif
 
 #include <immintrin.h>
 #include <algorithm>
@@ -10,121 +15,121 @@
 static const __m128i kBitSelectMask = _mm_set_epi8(0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80), 0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, static_cast<char>(0x80));
 static const __m128i kShuffleConstForRepeatBytes8Times = _mm_set_epi8(0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00);
 
-void CopyWithBitonalMask_Gray8_AVX(
-    std::uint32_t width,
-    std::uint32_t height,
-    const std::uint8_t* source_bitonal,
-    std::uint32_t source_bitonal_stride,
-    const std::uint8_t* source,
-    std::uint32_t source_stride,
-    std::uint8_t* destination,
-    std::uint32_t destination_stride)
-{
-    const __m128i zero = _mm_setzero_si128();
+//void CopyWithBitonalMask_Gray8_AVX(
+//    std::uint32_t width,
+//    std::uint32_t height,
+//    const std::uint8_t* source_bitonal,
+//    std::uint32_t source_bitonal_stride,
+//    const std::uint8_t* source,
+//    std::uint32_t source_stride,
+//    std::uint8_t* destination,
+//    std::uint32_t destination_stride)
+//{
+//    const __m128i zero = _mm_setzero_si128();
+//
+//    const uint32_t width_over16 = width / 16;
+//    const uint32_t width_remainder = width % 16;
+//    for (uint32_t y = 0; y < height; ++y)
+//    {
+//        const uint16_t* bitonal_line = reinterpret_cast<const uint16_t*>(source_bitonal + static_cast<size_t>(y) * source_bitonal_stride);
+//        const uint8_t* source_line = source + static_cast<size_t>(y) * source_stride;
+//        uint8_t* destination_line = destination + static_cast<size_t>(y) * destination_stride;
+//
+//        for (uint32_t x16 = 0; x16 < width_over16; ++x16)
+//        {
+//            const __m128i value = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
+//            // load two bytes from the bitonal source, and repeat each byte 8 times
+//            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
+//            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*bitonal_line)), kShuffleConstForRepeatBytes8Times);
+//
+//            // now we and it with the mask, which selects one bit in each byte, so we have
+//            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
+//            const __m128i andWithMask = _mm_andnot_si128(bitonal, kBitSelectMask);
+//            const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
+//            _mm_maskmoveu_si128(value, maskForStore, reinterpret_cast<char*>(destination_line));
+//
+//            ++bitonal_line;
+//            source_line += 16;
+//            destination_line += 16;
+//        }
+//
+//        // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
+//        for (uint32_t n = 0; n < width_remainder; ++n)
+//        {
+//            const uint8_t bitonal = *(reinterpret_cast<const uint8_t*>(bitonal_line) + n / 8);
+//            const uint8_t bit = 0x80 >> (n % 8);
+//            if (bitonal & bit)
+//            {
+//                *destination_line = *source_line;
+//            }
+//
+//            ++source_line;
+//            ++destination_line;
+//        }
+//    }
+//}
 
-    const uint32_t width_over16 = width / 16;
-    const uint32_t width_remainder = width % 16;
-    for (uint32_t y = 0; y < height; ++y)
-    {
-        const uint16_t* bitonal_line = reinterpret_cast<const uint16_t*>(source_bitonal + static_cast<size_t>(y) * source_bitonal_stride);
-        const uint8_t* source_line = source + static_cast<size_t>(y) * source_stride;
-        uint8_t* destination_line = destination + static_cast<size_t>(y) * destination_stride;
-
-        for (uint32_t x16 = 0; x16 < width_over16; ++x16)
-        {
-            const __m128i value = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
-            // load two bytes from the bitonal source, and repeat each byte 8 times
-            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*bitonal_line)), kShuffleConstForRepeatBytes8Times);
-
-            // now we and it with the mask, which selects one bit in each byte, so we have
-            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i andWithMask = _mm_andnot_si128(bitonal, kBitSelectMask);
-            const __m128i maskForStore = _mm_cmpeq_epi8(andWithMask, zero);
-            _mm_maskmoveu_si128(value, maskForStore, reinterpret_cast<char*>(destination_line));
-
-            ++bitonal_line;
-            source_line += 16;
-            destination_line += 16;
-        }
-
-        // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
-        for (uint32_t n = 0; n < width_remainder; ++n)
-        {
-            const uint8_t bitonal = *(reinterpret_cast<const uint8_t*>(bitonal_line) + n / 8);
-            const uint8_t bit = 0x80 >> (n % 8);
-            if (bitonal & bit)
-            {
-                *destination_line = *source_line;
-            }
-
-            ++source_line;
-            ++destination_line;
-        }
-    }
-}
-
-void CopyWithBitonalMask_Gray16_AVX(
-    std::uint32_t width,
-    std::uint32_t height,
-    const std::uint8_t* source_bitonal,
-    std::uint32_t source_bitonal_stride,
-    const std::uint16_t* source,
-    std::uint32_t source_stride,
-    std::uint16_t* destination,
-    std::uint32_t destination_stride)
-{
-    const __m128i zero = _mm_setzero_si128();
-
-    const uint32_t width_over16 = width / 16;
-    const uint32_t width_remainder = width % 16;
-    for (uint32_t y = 0; y < height; ++y)
-    {
-        const uint16_t* bitonal_line = reinterpret_cast<const uint16_t*>(source_bitonal + static_cast<size_t>(y) * source_bitonal_stride);
-        const uint16_t* source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride);
-        uint16_t* destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
-
-        for (uint32_t x16 = 0; x16 < width_over16; ++x16)
-        {
-            const __m128i value1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
-            const __m128i value2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line + 8));
-
-            // load two bytes from the bitonal source, and repeat each byte 8 times
-            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*bitonal_line)), kShuffleConstForRepeatBytes8Times);
-
-            // now we and it with the mask, which selects one bit in each byte, so we have
-            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i and_with_mask = _mm_andnot_si128(bitonal, kBitSelectMask);
-            const __m128i mask_for_store = _mm_cmpeq_epi8(and_with_mask, zero);
-
-            // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
-            const __m128i mask_for_store_words_low = _mm_cvtepi8_epi16(mask_for_store);
-            const __m128i mask_for_store_words_high = _mm_cvtepi8_epi16(_mm_unpackhi_epi64(mask_for_store, mask_for_store));
-
-            _mm_maskmoveu_si128(value1, mask_for_store_words_low, reinterpret_cast<char*>(destination_line));
-            _mm_maskmoveu_si128(value2, mask_for_store_words_high, reinterpret_cast<char*>(destination_line + 8));
-
-            ++bitonal_line;
-            source_line += 16;
-            destination_line += 16;
-        }
-
-        // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
-        for (uint32_t n = 0; n < width_remainder; ++n)
-        {
-            const uint8_t bitonal = *(reinterpret_cast<const uint8_t*>(bitonal_line) + n / 8);
-            const uint8_t bit = 0x80 >> (n % 8);
-            if (bitonal & bit)
-            {
-                *destination_line = *source_line;
-            }
-
-            ++source_line;
-            ++destination_line;
-        }
-    }
-}
+//void CopyWithBitonalMask_Gray16_AVX(
+//    std::uint32_t width,
+//    std::uint32_t height,
+//    const std::uint8_t* source_bitonal,
+//    std::uint32_t source_bitonal_stride,
+//    const std::uint16_t* source,
+//    std::uint32_t source_stride,
+//    std::uint16_t* destination,
+//    std::uint32_t destination_stride)
+//{
+//    const __m128i zero = _mm_setzero_si128();
+//
+//    const uint32_t width_over16 = width / 16;
+//    const uint32_t width_remainder = width % 16;
+//    for (uint32_t y = 0; y < height; ++y)
+//    {
+//        const uint16_t* bitonal_line = reinterpret_cast<const uint16_t*>(source_bitonal + static_cast<size_t>(y) * source_bitonal_stride);
+//        const uint16_t* source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride);
+//        uint16_t* destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
+//
+//        for (uint32_t x16 = 0; x16 < width_over16; ++x16)
+//        {
+//            const __m128i value1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
+//            const __m128i value2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line + 8));
+//
+//            // load two bytes from the bitonal source, and repeat each byte 8 times
+//            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
+//            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(static_cast<short>(*bitonal_line)), kShuffleConstForRepeatBytes8Times);
+//
+//            // now we and it with the mask, which selects one bit in each byte, so we have
+//            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
+//            const __m128i and_with_mask = _mm_andnot_si128(bitonal, kBitSelectMask);
+//            const __m128i mask_for_store = _mm_cmpeq_epi8(and_with_mask, zero);
+//
+//            // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
+//            const __m128i mask_for_store_words_low = _mm_cvtepi8_epi16(mask_for_store);
+//            const __m128i mask_for_store_words_high = _mm_cvtepi8_epi16(_mm_unpackhi_epi64(mask_for_store, mask_for_store));
+//
+//            _mm_maskmoveu_si128(value1, mask_for_store_words_low, reinterpret_cast<char*>(destination_line));
+//            _mm_maskmoveu_si128(value2, mask_for_store_words_high, reinterpret_cast<char*>(destination_line + 8));
+//
+//            ++bitonal_line;
+//            source_line += 16;
+//            destination_line += 16;
+//        }
+//
+//        // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
+//        for (uint32_t n = 0; n < width_remainder; ++n)
+//        {
+//            const uint8_t bitonal = *(reinterpret_cast<const uint8_t*>(bitonal_line) + n / 8);
+//            const uint8_t bit = 0x80 >> (n % 8);
+//            if (bitonal & bit)
+//            {
+//                *destination_line = *source_line;
+//            }
+//
+//            ++source_line;
+//            ++destination_line;
+//        }
+//    }
+//}
 
 template<typename T> inline void DoPixelsUntilAligned(uint32_t bits_to_byte_alignment, const uint8_t*& bitonal_mask, const T*& source, T*& destination)
 {
@@ -163,7 +168,25 @@ template<typename T> inline void DoRemainingPixels(uint32_t width_remainder, con
     }
 }
 
-void CopyWithBitonalMask_Roi_Gray8_AVX(
+//static int CheckPointers(const std::uint8_t* source_bitonal, const void* source, void* destination)
+//{
+//    if (source_bitonal == nullptr || source == nullptr || destination == nullptr)
+//    {
+//        return ReturnCode_InvalidPointers;
+//    }
+//
+//    return ReturnCode_Success;
+//}
+//
+//static int CheckSourceBitonalBitmap(std::uint32_t width, std::uint32_t height, const std::uint8_t* source_bitonal, std::uint32_t source_bitonal_stride)
+//{
+//    if ((width + 7) / 8 > source_bitonal_stride)
+//    {
+//        return ReturnCode_InvalidStride;
+//    }
+//}
+
+int CopyWithBitonalMask_Roi_Gray8_AVX(
     std::uint32_t width,
     std::uint32_t height,
     const std::uint8_t* source_bitonal,
@@ -177,6 +200,30 @@ void CopyWithBitonalMask_Roi_Gray8_AVX(
     std::uint8_t* destination,
     std::uint32_t destination_stride)
 {
+    int error_code = CheckCopyWithBitonalMask_Roi_Parameters(width, height, roi_x, roi_y, roi_width, roi_height);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_BitonalSource_Parameters(width, height, source_bitonal, source_bitonal_stride);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
     const __m128i zero = _mm_setzero_si128();
 
     // We are given the a ROI, of interest here is roi_x and roi_width. The code below
@@ -205,7 +252,7 @@ void CopyWithBitonalMask_Roi_Gray8_AVX(
         // First, we do the bits until we are byte aligned.
         DoPixelsUntilAligned(bits_to_byte_alignment, bitonal_line, source_line, destination_line);
 
-         // ...then, we do the remaining bits in 16 pixel chunks
+        // ...then, we do the remaining bits in 16 pixel chunks
         for (uint32_t x16 = 0; x16 < width_over16; ++x16)
         {
             const __m128i value = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
@@ -227,9 +274,11 @@ void CopyWithBitonalMask_Roi_Gray8_AVX(
         // ...and finally, if there is a remainder, we need to do it the slow way. The remainder is always less than 16.
         DoRemainingPixels(width_remainder, bitonal_line, source_line, destination_line);
     }
+
+    return ReturnCode_Success;
 }
 
-void CopyWithBitonalMask_Roi_Gray16_AVX(
+int CopyWithBitonalMask_Roi_Gray16_AVX(
     std::uint32_t width,
     std::uint32_t height,
     const std::uint8_t* source_bitonal,
@@ -243,6 +292,30 @@ void CopyWithBitonalMask_Roi_Gray16_AVX(
     std::uint16_t* destination,
     std::uint32_t destination_stride)
 {
+    int error_code = CheckCopyWithBitonalMask_Roi_Parameters(width, height, roi_x, roi_y, roi_width, roi_height);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_BitonalSource_Parameters(width, height, source_bitonal, source_bitonal_stride);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
     const __m128i zero = _mm_setzero_si128();
 
     // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
@@ -257,8 +330,8 @@ void CopyWithBitonalMask_Roi_Gray16_AVX(
     for (uint32_t y = 0; y < height; ++y)
     {
         const uint8_t* bitonal_line = source_bitonal + static_cast<size_t>(y) * source_bitonal_stride + roi_x / 8;
-        const uint16_t * source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride + static_cast<size_t>(2) * roi_x);
-        uint16_t * destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
+        const uint16_t* source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride + static_cast<size_t>(2) * roi_x);
+        uint16_t* destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
 
         // First, we do the bits until we are byte aligned.
         DoPixelsUntilAligned(bits_to_byte_alignment, bitonal_line, source_line, destination_line);
@@ -293,6 +366,8 @@ void CopyWithBitonalMask_Roi_Gray16_AVX(
         // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
         DoRemainingPixels(width_remainder, bitonal_line, source_line, destination_line);
     }
+
+    return ReturnCode_Success;
 }
 
 #endif

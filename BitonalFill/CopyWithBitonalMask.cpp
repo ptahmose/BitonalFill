@@ -1,4 +1,5 @@
 #include "CopyWithBitonalMask.h"
+#include "CopyWithBitonalMaskUtilities.h"
 #include "ColorPixelStructs.h"
 #include <cstdlib>
 #include <algorithm>
@@ -18,7 +19,7 @@ struct CopyWithBitonalMaskData
     T* destination_data;
     uint32_t destination_stride;
 };
-
+/*
 template <typename T>
 void CopyWithBitonalMask_C(const CopyWithBitonalMaskData<T>& info)
 {
@@ -65,35 +66,35 @@ void CopyWithBitonalMask_C(const CopyWithBitonalMaskData<T>& info)
             }
         }
     }
-}
+}*/
 
-void CopyWithBitonalMask_Gray8_C(
-    std::uint32_t width,
-    std::uint32_t height,
-    const std::uint8_t* source_bitonal,
-    std::uint32_t source_bitonal_stride,
-    const std::uint8_t* source,
-    std::uint32_t source_stride,
-    std::uint8_t* destination,
-    std::uint32_t destination_stride)
-{
-    const CopyWithBitonalMaskData<uint8_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, destination, destination_stride };
-    CopyWithBitonalMask_C<uint8_t>(info);
-}
-
-void CopyWithBitonalMask_Gray16_C(
-    std::uint32_t width,
-    std::uint32_t height,
-    const std::uint8_t* source_bitonal,
-    std::uint32_t source_bitonal_stride,
-    const std::uint16_t* source,
-    std::uint32_t source_stride,
-    std::uint16_t* destination,
-    std::uint32_t destination_stride)
-{
-    const CopyWithBitonalMaskData<uint16_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, destination, destination_stride };
-    CopyWithBitonalMask_C<uint16_t>(info);
-}
+//void CopyWithBitonalMask_Gray8_C(
+//    std::uint32_t width,
+//    std::uint32_t height,
+//    const std::uint8_t* source_bitonal,
+//    std::uint32_t source_bitonal_stride,
+//    const std::uint8_t* source,
+//    std::uint32_t source_stride,
+//    std::uint8_t* destination,
+//    std::uint32_t destination_stride)
+//{
+//    const CopyWithBitonalMaskData<uint8_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, destination, destination_stride };
+//    CopyWithBitonalMask_C<uint8_t>(info);
+//}
+//
+//void CopyWithBitonalMask_Gray16_C(
+//    std::uint32_t width,
+//    std::uint32_t height,
+//    const std::uint8_t* source_bitonal,
+//    std::uint32_t source_bitonal_stride,
+//    const std::uint16_t* source,
+//    std::uint32_t source_stride,
+//    std::uint16_t* destination,
+//    std::uint32_t destination_stride)
+//{
+//    const CopyWithBitonalMaskData<uint16_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, destination, destination_stride };
+//    CopyWithBitonalMask_C<uint16_t>(info);
+//}
 
 template<typename T>
 struct CopyRoiWithBitonalMaskData
@@ -189,7 +190,7 @@ void CopyWithBitonalMask_Roi_C(const CopyRoiWithBitonalMaskData<T>& info)
     }
 }
 
-void CopyWithBitonalMask_Roi_Gray8_C(
+int CopyWithBitonalMask_Roi_Gray8_C(
     std::uint32_t width,
     std::uint32_t height,
     const std::uint8_t* source_bitonal,
@@ -203,11 +204,36 @@ void CopyWithBitonalMask_Roi_Gray8_C(
     std::uint8_t* destination,
     std::uint32_t destination_stride)
 {
+    int error_code = CheckCopyWithBitonalMask_Roi_Parameters(width, height, roi_x, roi_y, roi_width, roi_height);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_BitonalSource_Parameters(width, height, source_bitonal, source_bitonal_stride);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
     const CopyRoiWithBitonalMaskData<uint8_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, roi_x, roi_y, roi_width, roi_height, destination, destination_stride };
     CopyWithBitonalMask_Roi_C<uint8_t>(info);
+    return ReturnCode_Success;
 }
 
-void CopyWithBitonalMask_Roi_Gray16_C(
+int CopyWithBitonalMask_Roi_Gray16_C(
     std::uint32_t width,
     std::uint32_t height,
     const std::uint8_t* source_bitonal,
@@ -221,6 +247,31 @@ void CopyWithBitonalMask_Roi_Gray16_C(
     std::uint16_t* destination,
     std::uint32_t destination_stride)
 {
+    int error_code = CheckCopyWithBitonalMask_Roi_Parameters(width, height, roi_x, roi_y, roi_width, roi_height);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_BitonalSource_Parameters(width, height, source_bitonal, source_bitonal_stride);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(width, height, source, source_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
+    error_code = CheckCopyWithBitonalMask_Bitmap_Parameters(roi_width, roi_height, destination, destination_stride, 1);
+    if (error_code != ReturnCode_Success)
+    {
+        return error_code;
+    }
+
     const CopyRoiWithBitonalMaskData<uint16_t> info = { width, height, source_bitonal, source_bitonal_stride, source, source_stride, roi_x, roi_y, roi_width, roi_height, destination, destination_stride };
     CopyWithBitonalMask_Roi_C<uint16_t>(info);
+    return ReturnCode_Success;
 }

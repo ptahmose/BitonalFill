@@ -1,6 +1,10 @@
 #include "config.h"
 
-#if BITONALFILL_HASAVX 
+#if BITONALFILL_HASAVX
+
+#ifndef __AVX__ 
+    #error "AVX instructions are not enabled - please add the option /arch:AVX when compiling this file"
+#endif
 
 #include <immintrin.h>
 #include <algorithm>

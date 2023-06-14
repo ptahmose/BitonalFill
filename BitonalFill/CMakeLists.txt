@@ -19,7 +19,9 @@ add_executable (BitonalFill
                 "FillRemainderLine.h" 
                 "CopyWithBitonalMask.h" 
                 "CopyWithBitonalMask.cpp" 
-                "CopyWithBitonalMask_AVX.cpp")
+                "CopyWithBitonalMask_AVX.cpp"
+                "CopyWithBitonalMaskUtilities.h"
+                "CopyWithBitonalMaskUtilities.cpp")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
@@ -33,6 +35,16 @@ if (IMMINTRINFOUND)
  set(BITONALFILL_HAS_AVX 1)
 else()
  set(BITONALFILL_HAS_AVX 0)
+endif()
+
+
+if (BITONALFILL_HAS_AVX EQUAL 1)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR
+      CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+      set_source_files_properties(CopyWithBitonalMask_AVX.cpp FillFromBitonal_AVX.cpp PROPERTIES COMPILE_FLAGS -mavx)
+  elseif (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+      set_source_files_properties(CopyWithBitonalMask_AVX.cpp FillFromBitonal_AVX.cpp PROPERTIES COMPILE_FLAGS /arch:AVX)
+  endif()
 endif()
 
 
