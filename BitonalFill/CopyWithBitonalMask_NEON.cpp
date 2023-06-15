@@ -119,14 +119,14 @@ int CopyWithBitonalMask_Roi_Gray8_NEON(
             uint8x8_t mask_1 = vtst_u8(bitonal_1, bitSelectMask);
             uint8x8_t mask_2 = vtst_u8(bitonal_2, bitSelectMask);
 
-            const int8x8x2_t source_data = vld1_s8_x2(source_line);
-            const int8x8x2_t destination_data = vld1_s8_x2(destination_line);
+            const uint8x8x2_t source_data = vld1_u8_x2((uint8_t*)source_line);
+            const uint8x8x2_t destination_data = vld1_u8_x2((uint8_t*)destination_line);
 
             uint8x8x2_t result;
             result.val[0] = vbsl_u8(mask_1, source_data.val[0], destination_data.val[0]);
             result.val[1] = vbsl_u8(mask_2, source_data.val[1], destination_data.val[1]);
 
-            vst1_s8_x2(destination_line, result);
+            vst1_u8_x2(destination_line, result);
 
             bitonal_line += 2;
             source_line += 16;
@@ -215,14 +215,14 @@ int CopyWithBitonalMask_Roi_Gray16_NEON(
             uint8x8_t mask_1 = vtst_u8(bitonal, bitSelectMask_1);
             uint8x8_t mask_2 = vtst_u8(bitonal, bitSelectMask_2);
 
-            const int8x8x2_t source_data = vld1_s8_x2(source_line);
-            const int8x8x2_t destination_data = vld1_s8_x2(destination_line);
+            const uint8x8x2_t source_data = vld1_u8_x2((uint8_t*)source_line);
+            const uint8x8x2_t destination_data = vld1_u8_x2((uint8_t*)destination_line);
 
             uint8x8x2_t result;
             result.val[0] = vbsl_u8(mask_1, source_data.val[0], destination_data.val[0]);
             result.val[1] = vbsl_u8(mask_2, source_data.val[1], destination_data.val[1]);
 
-            vst1_s8_x2(destination_line, result);
+            vst1_u8_x2((uint8_t*)destination_line, result);
 
             bitonal_line += 1;
             source_line += 8;
