@@ -21,7 +21,8 @@ add_executable (BitonalFill
                 "CopyWithBitonalMask.cpp" 
                 "CopyWithBitonalMask_AVX.cpp"
                 "CopyWithBitonalMaskUtilities.h"
-                "CopyWithBitonalMaskUtilities.cpp")
+                "CopyWithBitonalMaskUtilities.cpp" 
+                "CopyWithBitonalMask_NEON.cpp")
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -march=native")
