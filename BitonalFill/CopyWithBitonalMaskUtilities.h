@@ -1,6 +1,9 @@
+#pragma once
+
 #include "CopyWithBitonalMask.h"
 
 #include <cstdint>
+#include <cstddef>
 
 int CheckCopyWithBitonalMask_Roi_Parameters(
     std::uint32_t width, 
