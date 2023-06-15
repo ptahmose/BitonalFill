@@ -85,7 +85,7 @@ int CopyWithBitonalMask_Roi_Gray8_NEON(
 
     // We are given the a ROI, of interest here is roi_x and roi_width. The code below
     // first calculates the number of bits so that we are byte aligned (in the bitonal mask).
-    // Those bits we do in the first part, then we do the remaining "full bytes" with AVX-code
+    // Those bits we do in the first part, then we do the remaining "full bytes" with NEON-code
     // (i.e. we do 16 pixels at once, i.e. two bytes from the bitonal mask). In the third part
     // we then do any remaining bits, again with with scalar code.
     // +-----------------+--------|
@@ -140,7 +140,7 @@ int CopyWithBitonalMask_Roi_Gray8_NEON(
     return ReturnCode_Success;
 }
 
-int CopyWithBitonalMask_Roi_Gray16_AVX(
+int CopyWithBitonalMask_Roi_Gray16_NEON(
     std::uint32_t width,
     std::uint32_t height,
     const std::uint8_t* source_bitonal,
@@ -177,66 +177,63 @@ int CopyWithBitonalMask_Roi_Gray16_AVX(
     {
         return error_code;
     }
-    /*
-    const __m128i zero = _mm_setzero_si128();
 
-    // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
-    // Important - this must not be larger than the roi_width.
+    // We are given the a ROI, of interest here is roi_x and roi_width. The code below
+   // first calculates the number of bits so that we are byte aligned (in the bitonal mask).
+   // Those bits we do in the first part, then we do the remaining "full bytes" with NEON-code
+   // (i.e. we do 8 pixels at once, i.e. one byte from the bitonal mask). In the third part
+   // we then do any remaining bits, again with with scalar code.
+   // +-----------------+--------|
+   // |xxxx1010|10010011|011xxxxx|
+   // +-----------------+--------|
+
+   // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
+   // Important - this must not be larger than the roi_width.
     const uint32_t bits_to_byte_alignment = std::min(((roi_x + 7) / 8) * 8 - roi_x, roi_width);
 
     // now, we only have to consider the remaining bits, i.e. the number of bits calculated above needs to be subtracted from the roi_width.
     const uint32_t remaining_bits_count = roi_width - bits_to_byte_alignment;   // note: this cannot be negative
-    const uint32_t width_over16 = remaining_bits_count / 16;
-    const uint32_t width_remainder = remaining_bits_count % 16;
+    const uint32_t width_over8 = remaining_bits_count / 8;
+    const uint32_t width_remainder = remaining_bits_count % 8;
+    const uint8x8_t bitSelectMask_1 = vcreate_u8(0x1010202040408080ULL);
+    const uint8x8_t bitSelectMask_2 = vcreate_u8(0x0101020204040808ULL);
 
     for (uint32_t y = 0; y < height; ++y)
     {
         const uint8_t* bitonal_line = source_bitonal + static_cast<size_t>(y) * source_bitonal_stride + roi_x / 8;
-        const uint16_t* source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride + static_cast<size_t>(2) * roi_x);
+        const uint16_t* source_line = reinterpret_cast<const uint16_t*>(reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(y) * source_stride + roi_x * static_cast<size_t>(2));
         uint16_t* destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
 
         // First, we do the bits until we are byte aligned.
         DoPixelsUntilAligned(bits_to_byte_alignment, bitonal_line, source_line, destination_line);
 
-        // ...then, we do the remaining bits in 16 pixel chunks
-        for (uint32_t x16 = 0; x16 < width_over16; ++x16)
+        // ...then, we do the remaining bits in 8 pixel chunks
+        for (uint32_t x8 = 0; x8 < width_over8; ++x8)
         {
-            const __m128i value1 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line));
-            const __m128i value2 = _mm_loadu_si128(reinterpret_cast<const __m128i*>(source_line + 8));
+            const uint8x8_t bitonal = vdup_n_u8(*bitonal_line);
 
-            // load two bytes from the bitonal source, and repeat each byte 8 times
-            // so, we get bitonal = src[0] src[0] src[0] src[0] src[0] src[0] src[0] src[0] | src[1] src[1] src[1] src[1] src[1] src[1] src[1] src[1]
-            const __m128i bitonal = _mm_shuffle_epi8(_mm_set1_epi16(*reinterpret_cast<const short*>(bitonal_line)), kShuffleConstForRepeatBytes8Times);
+            uint8x8_t mask_1 = vtst_u8(bitonal, bitSelectMask_1);
+            uint8x8_t mask_2 = vtst_u8(bitonal, bitSelectMask_2);
 
-            // now we and it with the mask, which selects one bit in each byte, so we have
-            // src[0]&0x80 src[0]&0x40 src[0]&0x20 src[0]&0x10 src[0]&0x08 src[0]&0x04 src[0]&0x02 src[0]&0x01 | src[1]&0x80 src[1]&0x40 src[1]&0x20 src[1]&0x10 src[1]&0x08 src[1]&0x04 src[1]&0x02 src[1]&0x01
-            const __m128i and_with_mask = _mm_andnot_si128(bitonal, kBitSelectMask);
-            const __m128i mask_for_store = _mm_cmpeq_epi8(and_with_mask, zero);
+            const int8x8x2_t source_data = vld1_s8_x2(source_line);
+            const int8x8x2_t destination_data = vld1_s8_x2(destination_line);
 
-            // extend bytes to words, so 0x00 -> 0x0000 and 0xff -> 0xffff
-            const __m128i mask_for_store_words_low = _mm_cvtepi8_epi16(mask_for_store);
-            const __m128i mask_for_store_words_high = _mm_cvtepi8_epi16(_mm_unpackhi_epi64(mask_for_store, mask_for_store));
+            uint8x8x2_t result;
+            result.val[0] = vbsl_u8(mask_1, source_data.val[0], destination_data.val[0]);
+            result.val[1] = vbsl_u8(mask_2, source_data.val[1], destination_data.val[1]);
 
-            _mm_maskmoveu_si128(value1, mask_for_store_words_low, reinterpret_cast<char*>(destination_line));
-            _mm_maskmoveu_si128(value2, mask_for_store_words_high, reinterpret_cast<char*>(destination_line + 8));
+            vst1_s8_x2(destination_line, result);
 
-            bitonal_line += 2;
-            source_line += 16;
-            destination_line += 16;
+            bitonal_line += 1;
+            source_line += 8;
+            destination_line += 8;
         }
 
-        // If there is a remainder, we need to do it the slow way. The remainder is always less than 16.
+        // ...and finally, if there is a remainder, we need to do it the slow way. The remainder is always less than 8.
         DoRemainingPixels(width_remainder, bitonal_line, source_line, destination_line);
     }
-    */
+
     return ReturnCode_Success;
 }
-
-
-
-
-
-
-
 
 #endif

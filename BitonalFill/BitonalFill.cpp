@@ -566,8 +566,8 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
     Bitmap destination_gray8_C = CreateBitmap(PixelType::Gray8, kWidth - 2, kHeight);
     Bitmap destination_gray8_AVX = CreateBitmap(PixelType::Gray8, kWidth - 2, kHeight);
 
-    memset(destination_gray8_C.data.get(), 0x42, (size_t)destination_gray8_C.stride * destination_gray8_C.height);
-    memset(destination_gray8_AVX.data.get(), 0x42, (size_t)destination_gray8_AVX.stride * destination_gray8_AVX.height);
+    memset(destination_gray8_C.data.get(), 0x42, static_cast<size_t>(destination_gray8_C.stride) * destination_gray8_C.height);
+    memset(destination_gray8_AVX.data.get(), 0x42, static_cast<size_t>(destination_gray8_AVX.stride) * destination_gray8_AVX.height);
 
     auto start = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 0; i < kIterations; ++i)
@@ -575,15 +575,15 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
         CopyWithBitonalMask_Roi_Gray8_C(
             kWidth,
             kHeight,
-            (const uint8_t*)bitonal.data.get(),
+            static_cast<const uint8_t*>(bitonal.data.get()),
             bitonal.stride,
-            (const uint8_t*)source_gray8.data.get(),
+            static_cast<const uint8_t*>(source_gray8.data.get()),
             source_gray8.stride,
             1,
             0,
             destination_gray8_C.width,
             destination_gray8_C.height,
-            (uint8_t*)destination_gray8_C.data.get(),
+            static_cast<uint8_t*>(destination_gray8_C.data.get()),
             destination_gray8_C.stride);
     }
 
@@ -592,6 +592,12 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
     size_t dataSize = static_cast<size_t>(destination_gray8_C.stride) * destination_gray8_C.height;
     cout << "  Gray8 (C)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
+#if BITONALFILL_HASAVX || BITONALFILL_HASNEON
+#if BITONALFILL_HASAVX
+    static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+    static const char* SimdName = "NEON";
+#endif
     start = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 0; i < kIterations; ++i)
     {
@@ -610,12 +616,27 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
             (uint8_t*)destination_gray8_AVX.data.get(),
             destination_gray8_AVX.stride);
 #endif
+#if BITONALFILL_HASNEON
+        CopyWithBitonalMask_Roi_Gray8_NEON(
+            kWidth,
+            kHeight,
+            static_cast<const uint8_t*>(bitonal.data.get()),
+            bitonal.stride,
+            static_cast<const uint8_t*>(source_gray8.data.get()),
+            source_gray8.stride,
+            1,
+            0,
+            destination_gray8_AVX.width,
+            destination_gray8_AVX.height,
+            static_cast<uint8_t*>(destination_gray8_AVX.data.get()),
+            destination_gray8_AVX.stride);
+#endif
     }
 
     end = std::chrono::high_resolution_clock::now();
     elapsed_seconds = end - start;
     dataSize = static_cast<size_t>(destination_gray8_C.stride) * destination_gray8_C.height;
-    cout << "  Gray8 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+    cout << "  Gray8 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
     if (Compare(destination_gray8_C, destination_gray8_AVX))
     {
@@ -625,6 +646,7 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray8()
     {
         cout << "  ERROR - results differ" << endl;
     }
+#endif
 }
 
 static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
@@ -666,6 +688,12 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
     size_t dataSize = static_cast<size_t>(destination_gray16_C.stride) * destination_gray16_C.height;
     cout << "  Gray16 (C)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
+#if BITONALFILL_HASAVX || BITONALFILL_HASNEON
+#if BITONALFILL_HASAVX
+    static const char* SimdName = "AVX";
+#elif BITONALFILL_HASNEON
+    static const char* SimdName = "NEON";
+#endif
     start = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 0; i < kIterations; ++i)
     {
@@ -684,12 +712,27 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
             static_cast<uint16_t*>(destination_gray16_AVX.data.get()),
             destination_gray16_AVX.stride);
 #endif
+#if BITONALFILL_HASNEON
+        CopyWithBitonalMask_Roi_Gray16_NEON(
+            kWidth,
+            kHeight,
+            static_cast<const uint8_t*>(bitonal.data.get()),
+            bitonal.stride,
+            static_cast<const uint16_t*>(source_gray16.data.get()),
+            source_gray16.stride,
+            1,
+            0,
+            destination_gray16_AVX.width,
+            destination_gray16_AVX.height,
+            static_cast<uint16_t*>(destination_gray16_AVX.data.get()),
+            destination_gray16_AVX.stride);
+#endif
     }
 
     end = std::chrono::high_resolution_clock::now();
     elapsed_seconds = end - start;
     dataSize = static_cast<size_t>(destination_gray16_C.stride) * destination_gray16_C.height;
-    cout << "  Gray16 (AVX)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
+    cout << "  Gray16 (" << SimdName << ")" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
 
     if (Compare(destination_gray16_C, destination_gray16_AVX))
     {
@@ -699,92 +742,11 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
     {
         cout << "  ERROR - results differ" << endl;
     }
-}
-
-static void Test_BitonalFill_Roi_Gray8_NEON()
-{
-    const uint32_t kWidth = 2048;
-    const uint32_t kHeight = 2048;
-    const uint32_t kIterations = 100;
-
-    cout << "Benchmark for CopyWithBitonalMask_Roi_Gray8: " << kWidth << "x" << kHeight << ", " << kIterations << " repeats" << endl;
-
-    Bitmap bitonal = CreateBitmapWithRandomContent(PixelType::Bitonal, kWidth, kHeight);
-    Bitmap source_gray8 = CreateBitmapWithRandomContent(PixelType::Gray8, kWidth, kHeight);
-    Bitmap destination_gray8_C = CreateBitmap(PixelType::Gray8, kWidth - 2, kHeight);
-    Bitmap destination_gray8_AVX = CreateBitmap(PixelType::Gray8, kWidth - 2, kHeight);
-
-    ((uint8_t*)source_gray8.data.get())[0] = 0x1;
-    ((uint8_t*)source_gray8.data.get())[1] = 0x2;
-    ((uint8_t*)source_gray8.data.get())[2] = 0x4;
-    ((uint8_t*)source_gray8.data.get())[3] = 0x8;
-
-
-    memset(destination_gray8_C.data.get(), 0x42, (size_t)destination_gray8_C.stride * destination_gray8_C.height);
-    memset(destination_gray8_AVX.data.get(), 0x42, (size_t)destination_gray8_AVX.stride * destination_gray8_AVX.height);
-
-    auto start = std::chrono::high_resolution_clock::now();
-    for (uint32_t i = 0; i < kIterations; ++i)
-    {
-        CopyWithBitonalMask_Roi_Gray8_C(
-            kWidth,
-            kHeight,
-            (const uint8_t*)bitonal.data.get(),
-            bitonal.stride,
-            (const uint8_t*)source_gray8.data.get(),
-            source_gray8.stride,
-            1,
-            0,
-            destination_gray8_C.width,
-            destination_gray8_C.height,
-            (uint8_t*)destination_gray8_C.data.get(),
-            destination_gray8_C.stride);
-    }
-
-    auto end = std::chrono::high_resolution_clock::now();
-    std::chrono::duration<double> elapsed_seconds = end - start;
-    size_t dataSize = static_cast<size_t>(destination_gray8_C.stride) * destination_gray8_C.height;
-    cout << "  Gray8 (C)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
-
-    start = std::chrono::high_resolution_clock::now();
-    for (uint32_t i = 0; i < kIterations; ++i)
-    {
-#if BITONALFILL_HASNEON
-        CopyWithBitonalMask_Roi_Gray8_NEON(
-            kWidth,
-            kHeight,
-            (const uint8_t*)bitonal.data.get(),
-            bitonal.stride,
-            (const uint8_t*)source_gray8.data.get(),
-            source_gray8.stride,
-            1,
-            0,
-            destination_gray8_AVX.width,
-            destination_gray8_AVX.height,
-            (uint8_t*)destination_gray8_AVX.data.get(),
-            destination_gray8_AVX.stride);
 #endif
-    }
-
-    end = std::chrono::high_resolution_clock::now();
-    elapsed_seconds = end - start;
-    dataSize = static_cast<size_t>(destination_gray8_C.stride) * destination_gray8_C.height;
-    cout << "  Gray8 (NEON)" << " -> " << elapsed_seconds.count() << "s, " << (kIterations * dataSize / elapsed_seconds.count()) / 1e6 << "MB/s" << endl;
-
-    if (Compare(destination_gray8_C, destination_gray8_AVX))
-    {
-        cout << "  Results compare ok" << endl;
-    }
-    else
-    {
-        cout << "  ERROR - results differ" << endl;
-    }
 }
 
 int main()
 {
-    Test_BitonalFill_Roi_Gray8_NEON();
-
     Benchmark_CopyWithBitonalMask_Roi_Gray8();
     Benchmark_CopyWithBitonalMask_Roi_Gray16();
 
