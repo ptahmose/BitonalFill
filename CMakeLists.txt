@@ -7,5 +7,8 @@ project ("BitonalFill")
 
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 
+set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
 # Include sub-projects.
 add_subdirectory ("BitonalFill")
