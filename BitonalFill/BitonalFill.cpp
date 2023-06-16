@@ -662,8 +662,8 @@ static void Benchmark_CopyWithBitonalMask_Roi_Gray16()
     Bitmap destination_gray16_C = CreateBitmap(PixelType::Gray16, kWidth - 2, kHeight);
     Bitmap destination_gray16_AVX = CreateBitmap(PixelType::Gray16, kWidth - 2, kHeight);
 
-    memset(destination_gray16_C.data.get(), 0x42, (size_t)destination_gray16_C.stride * destination_gray16_C.height);
-    memset(destination_gray16_AVX.data.get(), 0x42, (size_t)destination_gray16_AVX.stride * destination_gray16_AVX.height);
+    memset(destination_gray16_C.data.get(), 0x42, static_cast<size_t>(destination_gray16_C.stride) * destination_gray16_C.height);
+    memset(destination_gray16_AVX.data.get(), 0x42, static_cast<size_t>(destination_gray16_AVX.stride) * destination_gray16_AVX.height);
 
     auto start = std::chrono::high_resolution_clock::now();
     for (uint32_t i = 0; i < kIterations; ++i)
