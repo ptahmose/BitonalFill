@@ -7,25 +7,24 @@
 #include "CopyWithBitonalMask.h"
 #include "CopyWithBitonalMaskUtilities.h"
 
-template<typename T> inline void DoPixelsUntilAligned(uint32_t bits_to_byte_alignment, const uint8_t*& bitonal_mask, const T*& source, T*& destination)
-{
-    if (bits_to_byte_alignment > 0)
-    {
-        const uint8_t bitonal_byte = *bitonal_mask;
-        for (uint32_t i = 8 - bits_to_byte_alignment; i < 8; ++i)
-        {
-            const uint8_t bit = 0x80 >> i;
-            if (bitonal_byte & bit)
-            {
-                *destination = *source;
-            }
+using namespace std;
 
-            ++source;
-            ++destination;
+template<typename T> inline void DoPixelsUntilAligned(uint32_t start_bit_no, uint32_t end_bit_no, const uint8_t*& bitonal_mask, const T*& source, T*& destination)
+{
+    const uint8_t bitonal_byte = *bitonal_mask;
+    for (uint32_t i = start_bit_no; i < end_bit_no; ++i)
+    {
+        const uint8_t bit = 0x80 >> i;
+        if (bitonal_byte & bit)
+        {
+            *destination = *source;
         }
 
-        ++bitonal_mask;
+        ++source;
+        ++destination;
     }
+
+    ++bitonal_mask;
 }
 
 template<typename T> inline void DoRemainingPixels(uint32_t width_remainder, const uint8_t* bitonal_mask, const T*& source, T*& destination)
@@ -82,6 +81,8 @@ int CopyWithBitonalMask_Roi_Gray8_NEON(
         return error_code;
     }
 
+    const uint8_t* source_pointer = source + static_cast<size_t>(roi_y) * source_stride + static_cast<size_t>(roi_x);
+    const uint8_t* bitonal_pointer = source_bitonal + static_cast<size_t>(roi_y) * source_bitonal_stride + roi_x / 8;
 
     // We are given the a ROI, of interest here is roi_x and roi_width. The code below
     // first calculates the number of bits so that we are byte aligned (in the bitonal mask).
@@ -93,22 +94,26 @@ int CopyWithBitonalMask_Roi_Gray8_NEON(
     // +-----------------+--------|
 
     // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
-    // Important - this must not be larger than the roi_width.
-    const uint32_t bits_to_byte_alignment = std::min(((roi_x + 7) / 8) * 8 - roi_x, roi_width);
+    const uint32_t bits_to_byte_alignment = ((roi_x + 7) / 8) * 8 - roi_x;
+    const uint32_t start_bit_no = roi_x % 8;    // at what bit to start in the first byte (if we need to do bits_to_byte_alignment bits before we are byte aligned)
+    const uint32_t end_bit_no = (min)(8u - start_bit_no, roi_width + start_bit_no);   // note: start_bit_no cannot be larger than 8, but we must ensure that we never do more bits than roi_width specifies
 
     // now, we only have to consider the remaining bits, i.e. the number of bits calculated above needs to be subtracted from the roi_width.
-    const uint32_t remaining_bits_count = roi_width - bits_to_byte_alignment;   // note: this cannot be negative
+    const uint32_t remaining_bits_count = roi_width > bits_to_byte_alignment ? roi_width - bits_to_byte_alignment : 0;
     const uint32_t width_over16 = remaining_bits_count / 16;
     const uint32_t width_remainder = remaining_bits_count % 16;
     const uint8x8_t bitSelectMask = vcreate_u8(0x0102040810204080ULL);
     for (uint32_t y = 0; y < height; ++y)
     {
-        const uint8_t* bitonal_line = source_bitonal + static_cast<size_t>(y) * source_bitonal_stride + roi_x / 8;
-        const uint8_t* source_line = source + static_cast<size_t>(y) * source_stride + roi_x;
+        const uint8_t* bitonal_line = bitonal_pointer + static_cast<size_t>(y) * source_bitonal_stride;
+        const uint8_t* source_line = source_pointer + static_cast<size_t>(y) * source_stride;
         uint8_t* destination_line = destination + static_cast<size_t>(y) * destination_stride;
 
         // First, we do the bits until we are byte aligned.
-        DoPixelsUntilAligned(bits_to_byte_alignment, bitonal_line, source_line, destination_line);
+        if (bits_to_byte_alignment > 0)
+        {
+            DoPixelsUntilAligned(start_bit_no, end_bit_no, bitonal_line, source_line, destination_line);
+        }
 
         // ...then, we do the remaining bits in 16 pixel chunks
         for (uint32_t x16 = 0; x16 < width_over16; ++x16)
@@ -178,6 +183,9 @@ int CopyWithBitonalMask_Roi_Gray16_NEON(
         return error_code;
     }
 
+    const uint8_t* source_pointer = reinterpret_cast<const uint8_t*>(source) + static_cast<size_t>(roi_y) * source_stride + static_cast<size_t>(roi_x) * sizeof(uint16_t);
+    const uint8_t* bitonal_pointer = source_bitonal + static_cast<size_t>(roi_y) * source_bitonal_stride + roi_x / 8;
+
     // We are given the a ROI, of interest here is roi_x and roi_width. The code below
    // first calculates the number of bits so that we are byte aligned (in the bitonal mask).
    // Those bits we do in the first part, then we do the remaining "full bytes" with NEON-code
@@ -187,12 +195,13 @@ int CopyWithBitonalMask_Roi_Gray16_NEON(
    // |xxxx1010|10010011|011xxxxx|
    // +-----------------+--------|
 
-   // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
-   // Important - this must not be larger than the roi_width.
-    const uint32_t bits_to_byte_alignment = std::min(((roi_x + 7) / 8) * 8 - roi_x, roi_width);
+    // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
+    const uint32_t bits_to_byte_alignment = ((roi_x + 7) / 8) * 8 - roi_x;
+    const uint32_t start_bit_no = roi_x % 8;    // at what bit to start in the first byte (if we need to do bits_to_byte_alignment bits before we are byte aligned)
+    const uint32_t end_bit_no = (min)(8u - start_bit_no, roi_width + start_bit_no);   // note: start_bit_no cannot be larger than 8, but we must ensure that we never do more bits than roi_width specifies
 
     // now, we only have to consider the remaining bits, i.e. the number of bits calculated above needs to be subtracted from the roi_width.
-    const uint32_t remaining_bits_count = roi_width - bits_to_byte_alignment;   // note: this cannot be negative
+    const uint32_t remaining_bits_count = roi_width > bits_to_byte_alignment ? roi_width - bits_to_byte_alignment : 0;
     const uint32_t width_over8 = remaining_bits_count / 8;
     const uint32_t width_remainder = remaining_bits_count % 8;
     const uint8x8_t bitSelectMask_1 = vcreate_u8(0x1010202040408080ULL);
@@ -205,7 +214,10 @@ int CopyWithBitonalMask_Roi_Gray16_NEON(
         uint16_t* destination_line = reinterpret_cast<uint16_t*>(reinterpret_cast<uint8_t*>(destination) + static_cast<size_t>(y) * destination_stride);
 
         // First, we do the bits until we are byte aligned.
-        DoPixelsUntilAligned(bits_to_byte_alignment, bitonal_line, source_line, destination_line);
+        if (bits_to_byte_alignment > 0)
+        {
+            DoPixelsUntilAligned(start_bit_no, end_bit_no, bitonal_line, source_line, destination_line);
+        }
 
         // ...then, we do the remaining bits in 8 pixel chunks
         for (uint32_t x8 = 0; x8 < width_over8; ++x8)

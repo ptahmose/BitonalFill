@@ -26,13 +26,13 @@ struct CopyRoiWithBitonalMaskData
 template <typename T>
 void CopyWithBitonalMask_Roi_C(const CopyRoiWithBitonalMaskData<T>& info)
 {
-
     // This is the number of bits we need to do before we are byte aligned - we round up the roi_x to the next byte boundary, and then subtract roi_x.
-    // Important - this must not be larger than the roi_width.
-    const uint32_t bits_to_byte_alignment = std::min(((info.roi_x + 7) / 8) * 8 - info.roi_x, info.roi_width);
+    const uint32_t bits_to_byte_alignment = ((info.roi_x + 7) / 8) * 8 - info.roi_x;
+    const uint8_t start_bit_no = info.roi_x % 8; // at what bit to start in the first byte (if we need to do bits_to_byte_alignment bits before we are byte aligned)
+    const uint32_t end_bit_no = (min)(8u - start_bit_no, info.roi_width + start_bit_no); // note: start_bit_no cannot be larger than 8, but we must ensure that we never do more bits than roi_width specifies
 
     // now, we only have to consider the remaining bits, i.e. the number of bits calculated above needs to be subtracted from the roi_width.
-    const uint32_t remaining_bits_count = info.roi_width - bits_to_byte_alignment;   // note: this cannot be negative
+    const uint32_t remaining_bits_count = info.roi_width > bits_to_byte_alignment ? info.roi_width - bits_to_byte_alignment : 0;
     const uint32_t width_over_eight = remaining_bits_count / 8;
     const uint32_t width_remainder = remaining_bits_count % 8;
 
@@ -49,7 +49,7 @@ void CopyWithBitonalMask_Roi_C(const CopyRoiWithBitonalMaskData<T>& info)
         if (bits_to_byte_alignment > 0)
         {
             const uint8_t bitonal_byte = *bitonal;
-            for (uint32_t i = 8 - bits_to_byte_alignment; i < 8; ++i)
+            for (uint32_t i = start_bit_no; i < end_bit_no; ++i)
             {
                 const uint8_t bit = 0x80 >> i;
                 if (bitonal_byte & bit)
