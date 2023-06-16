@@ -17,7 +17,7 @@ The repository contains implementations leveraging [AVX-instructions](https://en
 ```
 cd build
 mkdir build
-cmake .. -DCMAKE_BUILD_TYPE
+cmake .. -DCMAKE_BUILD_TYPE=Release
 cmake  --build . --config Release
 ```
 
